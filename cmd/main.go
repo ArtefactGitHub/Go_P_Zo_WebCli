@@ -4,6 +4,10 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"os"
+
+	"github.com/gorilla/csrf"
+	"github.com/gorilla/mux"
 )
 
 type User struct {
@@ -18,13 +22,18 @@ const port = "8080"
 var user User = User{}
 
 func main() {
-	http.HandleFunc("/signup", handleSignUp)
-	http.HandleFunc("/signin", handleSignIn)
-	http.HandleFunc("/user", handleUser)
-	http.HandleFunc("/", handleHome)
+	// csrf認証キーの取得
+	authKey := os.Getenv("Go_P_Zo_WebCli_CsrfAuthKey")
 
+	r := mux.NewRouter()
+	r.HandleFunc("/signup", handleSignUp)
+	r.HandleFunc("/signin", handleSignIn)
+	r.HandleFunc("/user", handleUser)
+	r.HandleFunc("/", handleHome)
+
+	csrfMiddleware := csrf.Protect([]byte(authKey), csrf.Path("/"))(r)
+	http.ListenAndServe("localhost:"+port, csrfMiddleware)
 	log.Printf("running on http://localhost:%s", port)
-	log.Print(http.ListenAndServe("localhost:"+port, nil))
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
@@ -35,14 +44,15 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 func handleSignUp(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
-		t.Execute(w, nil)
+		t.Execute(w, map[string]interface{}{
+			csrf.TemplateTag: csrf.TemplateField(r),
+		})
 	} else if r.Method == http.MethodPost {
 		r.ParseForm()
 
 		username := r.Form.Get("username")
 		email := r.Form.Get("email")
 		password := r.Form.Get("password")
-		log.Printf("%s, %s, %s", username, email, password)
 
 		user = User{Name: username, Email: email, Password: password}
 
@@ -53,13 +63,14 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 func handleSignIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		t, _ := template.ParseFiles(pubPath + "/auth/signin.html")
-		t.Execute(w, nil)
+		t.Execute(w, map[string]interface{}{
+			csrf.TemplateTag: csrf.TemplateField(r),
+		})
 	} else if r.Method == http.MethodPost {
 		r.ParseForm()
 
 		email := r.Form.Get("email")
 		password := r.Form.Get("password")
-		log.Printf("%s, %s", email, password)
 
 		if email == user.Email && password == user.Password {
 			http.Redirect(w, r, "/user", http.StatusMovedPermanently)
