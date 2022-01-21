@@ -12,7 +12,7 @@ import (
 const pubPath = "../public"
 const port = "8080"
 
-var user User = User{}
+var user SessionData = SessionData{}
 
 func main() {
 	// csrf認証キーの取得
