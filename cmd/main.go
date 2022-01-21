@@ -4,17 +4,10 @@ import (
 	"html/template"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/gorilla/csrf"
 	"github.com/gorilla/mux"
 )
-
-type User struct {
-	Name     string
-	Email    string
-	Password string
-}
 
 const pubPath = "../public"
 const port = "8080"
@@ -23,7 +16,7 @@ var user User = User{}
 
 func main() {
 	// csrf認証キーの取得
-	authKey := os.Getenv("Go_P_Zo_WebCli_CsrfAuthKey")
+	authKey := Cfg.CsrfAuthKey
 
 	r := mux.NewRouter()
 	r.HandleFunc("/signup", handleSignUp)
@@ -32,8 +25,8 @@ func main() {
 	r.HandleFunc("/", handleHome)
 
 	csrfMiddleware := csrf.Protect([]byte(authKey), csrf.Path("/"))(r)
-	http.ListenAndServe("localhost:"+port, csrfMiddleware)
 	log.Printf("running on http://localhost:%s", port)
+	http.ListenAndServe("localhost:"+port, csrfMiddleware)
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
@@ -41,6 +34,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 	t.Execute(w, nil)
 }
 
+// ユーザー登録
 func handleSignUp(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
@@ -54,12 +48,32 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 		email := r.Form.Get("email")
 		password := r.Form.Get("password")
 
-		user = User{Name: username, Email: email, Password: password}
+		res, err := RequestSignup(username, "", email, password)
+		log.Printf("res: %v, err: %v", res, err)
 
+		if err != nil || res.StatusCode != http.StatusCreated {
+			message := ""
+			if err != nil {
+				message = err.Error()
+			} else {
+				message = res.Error.Message
+			}
+
+			t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
+			t.Execute(w, map[string]interface{}{
+				"message":        message,
+				csrf.TemplateTag: csrf.TemplateField(r),
+			})
+			return
+		}
+
+		user.FamilyName = res.User.FamilyName
+		user.Email = res.User.Email
 		http.Redirect(w, r, "/user", http.StatusMovedPermanently)
 	}
 }
 
+// ログイン
 func handleSignIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		t, _ := template.ParseFiles(pubPath + "/auth/signin.html")
@@ -68,19 +82,37 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 		})
 	} else if r.Method == http.MethodPost {
 		r.ParseForm()
-
 		email := r.Form.Get("email")
 		password := r.Form.Get("password")
 
-		if email == user.Email && password == user.Password {
-			http.Redirect(w, r, "/user", http.StatusMovedPermanently)
-		} else {
-			http.Redirect(w, r, "/login", http.StatusMovedPermanently)
+		res, err := RequestSignin(email, password)
+		log.Printf("res: %v, err: %v", res, err)
+
+		if err != nil || res.StatusCode != http.StatusOK {
+			message := "認証情報が正しくありません"
+			if err != nil {
+				message = err.Error()
+			} else if res.Error != nil {
+				message = res.Error.Message
+			}
+
+			t, _ := template.ParseFiles(pubPath + "/auth/signin.html")
+			t.Execute(w, map[string]interface{}{
+				"message":        message,
+				csrf.TemplateTag: csrf.TemplateField(r),
+			})
+			return
 		}
+
+		user.FamilyName = res.FamilyName
+		user.Email = res.Email
+		http.Redirect(w, r, "/user", http.StatusMovedPermanently)
 	}
 }
 
+// マイページ
 func handleUser(w http.ResponseWriter, r *http.Request) {
 	t, _ := template.ParseFiles(pubPath + "/user/mypage.html")
+	log.Printf("user %v", user)
 	t.Execute(w, user)
 }
