@@ -22,18 +22,19 @@ func NewSessionManager(sessionKey string, lifetimeDate int) *SessionManager {
 
 func (m *SessionManager) StartSession(w http.ResponseWriter, r *http.Request, data *SessionData) {
 	// 既に存在する場合は終了
-	if sessionId := m.getSessionId(r); sessionId != "" {
-		m.EndSession(sessionId)
+	if sessionId := m.getSessionIdByCookie(r); sessionId != "" {
+		m.EndSession(w, r, sessionId)
 	}
 
 	sessionId := m.NewSessionId()
+	data.SessionId = sessionId
 	m.sessions[sessionId] = data
 
 	m.setCookie(w, sessionId)
 }
 
 func (m *SessionManager) GetSession(w http.ResponseWriter, r *http.Request) (*SessionData, error) {
-	sessionId := m.getSessionId(r)
+	sessionId := m.getSessionIdByCookie(r)
 
 	// セッションが存在しない
 	if session, ok := m.sessions[sessionId]; !ok {
@@ -44,9 +45,9 @@ func (m *SessionManager) GetSession(w http.ResponseWriter, r *http.Request) (*Se
 	}
 }
 
-func (m *SessionManager) EndSession(sessionId string) error {
+func (m *SessionManager) EndSession(w http.ResponseWriter, r *http.Request, sessionId string) {
 	delete(m.sessions, sessionId)
-	return nil
+	m.deleteCookie(w, r, sessionId)
 }
 
 func (m *SessionManager) NewSessionId() string {
@@ -73,7 +74,7 @@ func (m *SessionManager) deleteCookie(w http.ResponseWriter, r *http.Request, se
 	}
 }
 
-func (m *SessionManager) getSessionId(r *http.Request) string {
+func (m *SessionManager) getSessionIdByCookie(r *http.Request) string {
 	c, err := r.Cookie(m.sessionKey)
 	// クッキーが存在しない
 	if err != nil {

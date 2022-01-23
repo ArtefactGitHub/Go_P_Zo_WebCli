@@ -23,6 +23,7 @@ func main() {
 	r := mux.NewRouter()
 	r.HandleFunc("/signup", handleSignUp)
 	r.HandleFunc("/signin", handleSignIn)
+	r.HandleFunc("/signout", handleSignOut)
 	r.HandleFunc("/user", handleUser)
 	r.HandleFunc("/", handleHome)
 
@@ -32,8 +33,16 @@ func main() {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
+	isLogin := false
+	if _, err := sm.GetSession(w, r); err == nil {
+		isLogin = true
+	}
+
 	t, _ := template.ParseFiles(pubPath + "/home/index.html")
-	t.Execute(w, nil)
+	t.Execute(w, map[string]interface{}{
+		"isLogin":        isLogin,
+		csrf.TemplateTag: csrf.TemplateField(r),
+	})
 }
 
 // ユーザー登録
@@ -120,6 +129,19 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 
 		http.Redirect(w, r, "/user", http.StatusMovedPermanently)
 	}
+}
+
+// ログアウト
+func handleSignOut(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		// セッションが存在する場合は削除する
+		if sessionData, err := sm.GetSession(w, r); err == nil {
+			sm.EndSession(w, r, sessionData.SessionId)
+		}
+	}
+
+	t, _ := template.ParseFiles(pubPath + "/home/index.html")
+	t.Execute(w, nil)
 }
 
 // マイページ
