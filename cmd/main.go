@@ -11,8 +11,10 @@ import (
 
 const pubPath = "../public"
 const port = "8080"
+const cookie_key_session string = "go_p_zo_webcli_cookie_key_session"
+const sessionLifetimeDate int = 1
 
-var user SessionData = SessionData{}
+var sm *SessionManager = NewSessionManager(cookie_key_session, sessionLifetimeDate)
 
 func main() {
 	// csrf認証キーの取得
@@ -37,10 +39,16 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 // ユーザー登録
 func handleSignUp(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
-		t.Execute(w, map[string]interface{}{
-			csrf.TemplateTag: csrf.TemplateField(r),
-		})
+		// セッションが存在しない
+		if _, err := sm.GetSession(w, r); err != nil {
+			t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
+			t.Execute(w, map[string]interface{}{
+				csrf.TemplateTag: csrf.TemplateField(r),
+			})
+		} else {
+			http.Redirect(w, r, "/user", http.StatusMovedPermanently)
+			return
+		}
 	} else if r.Method == http.MethodPost {
 		r.ParseForm()
 
@@ -67,8 +75,6 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		user.FamilyName = res.User.FamilyName
-		user.Email = res.User.Email
 		http.Redirect(w, r, "/user", http.StatusMovedPermanently)
 	}
 }
@@ -76,10 +82,16 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 // ログイン
 func handleSignIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
-		t, _ := template.ParseFiles(pubPath + "/auth/signin.html")
-		t.Execute(w, map[string]interface{}{
-			csrf.TemplateTag: csrf.TemplateField(r),
-		})
+		// セッションが存在しない
+		if _, err := sm.GetSession(w, r); err != nil {
+			t, _ := template.ParseFiles(pubPath + "/auth/signin.html")
+			t.Execute(w, map[string]interface{}{
+				csrf.TemplateTag: csrf.TemplateField(r),
+			})
+		} else {
+			http.Redirect(w, r, "/user", http.StatusMovedPermanently)
+			return
+		}
 	} else if r.Method == http.MethodPost {
 		r.ParseForm()
 		email := r.Form.Get("email")
@@ -104,15 +116,21 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		user.FamilyName = res.FamilyName
-		user.Email = res.Email
+		sm.StartSession(w, r, res.SessionData)
+
 		http.Redirect(w, r, "/user", http.StatusMovedPermanently)
 	}
 }
 
 // マイページ
 func handleUser(w http.ResponseWriter, r *http.Request) {
-	t, _ := template.ParseFiles(pubPath + "/user/mypage.html")
-	log.Printf("user %v", user)
-	t.Execute(w, user)
+	// セッションが存在しない
+	if session, err := sm.GetSession(w, r); err != nil {
+		http.Redirect(w, r, "/signin", http.StatusMovedPermanently)
+		return
+	} else {
+		t, _ := template.ParseFiles(pubPath + "/user/mypage.html")
+		log.Printf("session %v", session)
+		t.Execute(w, session)
+	}
 }
