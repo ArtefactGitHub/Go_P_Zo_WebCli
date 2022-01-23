@@ -66,6 +66,7 @@ type User struct {
 }
 
 type SessionData struct {
+	SessionId  string
 	GivenName  string `json:"given_name"`
 	FamilyName string `json:"family_name"`
 	Email      string `json:"email"`
