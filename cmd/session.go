@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/base64"
 	"errors"
@@ -10,14 +11,38 @@ import (
 	"time"
 )
 
+var Sm *SessionManager
+
 type SessionManager struct {
 	sessions     map[string]*SessionData
 	sessionKey   string
 	lifetimeDate int
 }
 
-func NewSessionManager(sessionKey string, lifetimeDate int) *SessionManager {
-	return &SessionManager{sessions: map[string]*SessionData{}, sessionKey: sessionKey, lifetimeDate: lifetimeDate}
+func NewSessionManager(ctx context.Context, sessionKey string, lifetimeDate int) *SessionManager {
+	if Sm != nil {
+		return Sm
+	}
+	Sm := &SessionManager{sessions: map[string]*SessionData{}, sessionKey: sessionKey, lifetimeDate: lifetimeDate}
+	Sm.StartDeleteSessionAsync(ctx)
+	return Sm
+}
+
+func (m *SessionManager) StartDeleteSessionAsync(ctx context.Context) {
+	timer := time.NewTicker(time.Hour * 24 * time.Duration(m.lifetimeDate))
+
+	go func() {
+		defer timer.Stop()
+		for {
+			select {
+			case <-ctx.Done():
+				log.Printf("delete session process is canceled")
+				return
+			case <-timer.C:
+				m.endExpiredSession()
+			}
+		}
+	}()
 }
 
 func (m *SessionManager) StartSession(w http.ResponseWriter, r *http.Request, data *SessionData) {
@@ -28,6 +53,7 @@ func (m *SessionManager) StartSession(w http.ResponseWriter, r *http.Request, da
 
 	sessionId := m.NewSessionId()
 	data.SessionId = sessionId
+	data.Expire = time.Now().AddDate(0, 0, m.lifetimeDate)
 	m.sessions[sessionId] = data
 
 	m.setCookie(w, sessionId)
@@ -83,4 +109,15 @@ func (m *SessionManager) getSessionIdByCookie(r *http.Request) string {
 	}
 
 	return c.Value
+}
+
+// 期限切れのセッションを削除
+func (m *SessionManager) endExpiredSession() {
+	now := time.Now().Unix()
+	for k, v := range m.sessions {
+		if v.Expire.Unix() < now {
+			log.Printf("delete session key: %s", k)
+			delete(m.sessions, k)
+		}
+	}
 }

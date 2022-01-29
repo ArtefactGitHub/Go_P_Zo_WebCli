@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"html/template"
 	"log"
 	"net/http"
@@ -14,8 +15,6 @@ const port = "8080"
 const cookie_key_session string = "go_p_zo_webcli_cookie_key_session"
 const sessionLifetimeDate int = 1
 
-var sm *SessionManager = NewSessionManager(cookie_key_session, sessionLifetimeDate)
-
 func main() {
 	// csrf認証キーの取得
 	authKey := Cfg.CsrfAuthKey
@@ -27,6 +26,11 @@ func main() {
 	r.HandleFunc("/user", handleUser)
 	r.HandleFunc("/", handleHome)
 
+	// セッション管理起動
+	ctx, cancel := context.WithCancel(context.Background())
+	Sm = NewSessionManager(ctx, cookie_key_session, sessionLifetimeDate)
+	defer cancel()
+
 	csrfMiddleware := csrf.Protect([]byte(authKey), csrf.Path("/"))(r)
 	log.Printf("running on http://localhost:%s", port)
 	http.ListenAndServe("localhost:"+port, csrfMiddleware)
@@ -34,7 +38,7 @@ func main() {
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
 	isLogin := false
-	if _, err := sm.GetSession(w, r); err == nil {
+	if _, err := Sm.GetSession(w, r); err == nil {
 		isLogin = true
 	}
 
@@ -49,7 +53,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 func handleSignUp(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		// セッションが存在しない
-		if _, err := sm.GetSession(w, r); err != nil {
+		if _, err := Sm.GetSession(w, r); err != nil {
 			t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
 			t.Execute(w, map[string]interface{}{
 				csrf.TemplateTag: csrf.TemplateField(r),
@@ -92,7 +96,7 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 func handleSignIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		// セッションが存在しない
-		if _, err := sm.GetSession(w, r); err != nil {
+		if _, err := Sm.GetSession(w, r); err != nil {
 			t, _ := template.ParseFiles(pubPath + "/auth/signin.html")
 			t.Execute(w, map[string]interface{}{
 				csrf.TemplateTag: csrf.TemplateField(r),
@@ -125,7 +129,7 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		sm.StartSession(w, r, res.SessionData)
+		Sm.StartSession(w, r, res.SessionData)
 
 		http.Redirect(w, r, "/user", http.StatusMovedPermanently)
 	}
@@ -135,8 +139,8 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 func handleSignOut(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
 		// セッションが存在する場合は削除する
-		if sessionData, err := sm.GetSession(w, r); err == nil {
-			sm.EndSession(w, r, sessionData.SessionId)
+		if sessionData, err := Sm.GetSession(w, r); err == nil {
+			Sm.EndSession(w, r, sessionData.SessionId)
 		}
 	}
 
@@ -147,7 +151,7 @@ func handleSignOut(w http.ResponseWriter, r *http.Request) {
 // マイページ
 func handleUser(w http.ResponseWriter, r *http.Request) {
 	// セッションが存在しない
-	if session, err := sm.GetSession(w, r); err != nil {
+	if session, err := Sm.GetSession(w, r); err != nil {
 		http.Redirect(w, r, "/signin", http.StatusMovedPermanently)
 		return
 	} else {

@@ -70,4 +70,5 @@ type SessionData struct {
 	GivenName  string `json:"given_name"`
 	FamilyName string `json:"family_name"`
 	Email      string `json:"email"`
+	Expire     time.Time
 }
