@@ -26,7 +26,7 @@ func RequestSignup(familyName, givenName, email, password string) (*PostUserResp
 func RequestSignin(email, password string) (*PostLoginResponseData, error) {
 	reqData := &PostLoginRequestData{Identifier: email, Secret: password}
 	resData := &PostLoginResponseData{}
-	err := Post("login", reqData, &resData)
+	err := Post("usertokens", reqData, &resData)
 	return resData, err
 }
 
@@ -34,22 +34,20 @@ func RequestSignin(email, password string) (*PostLoginResponseData, error) {
 func Post(api string, reqBody interface{}, resData interface{}) error {
 	// Expire token
 	if isInvalidToken() {
-		accessToken, err := getAccessToken()
+		_, err := getAccessToken()
 		if err != nil {
 			return err
 		}
-		log.Printf("accessToken.Jwt: %v", accessToken.Jwt)
-		log.Printf("accessToken.ExpiresAt: %v", accessToken.ExpiresAt)
 	}
 
 	reqHeader := map[string]string{"Authorization": fmt.Sprintf("Bearer %s", accessToken.Jwt)}
-	return postRequest(api, reqHeader, reqBody, resData)
+	return request(api, http.MethodPost, reqHeader, reqBody, resData)
 }
 
-// POSTリクエスト処理
-func postRequest(api string, reqHeader map[string]string, reqBody interface{}, resData interface{}) error {
+// リクエスト処理
+func request(api string, method string, reqHeader map[string]string, reqBody interface{}, resData interface{}) error {
 	endpoint := "http://localhost:8000/api/v1/"
-	log.Printf("[Post] api: %s, reqHeader: %v reqData: %v", api, reqHeader, reqBody)
+	log.Printf("[Post] api: %s, method: %s, reqHeader: %v, reqData: %v", api, method, reqHeader, reqBody)
 
 	reqURL, err := url.Parse(endpoint)
 	if err != nil {
@@ -58,8 +56,13 @@ func postRequest(api string, reqHeader map[string]string, reqBody interface{}, r
 	reqURL.Path = path.Join(reqURL.Path, api)
 	log.Printf("[Post] reqURL.Path: %s", reqURL.Path)
 
-	json, _ := json.MarshalIndent(reqBody, "", "\t")
-	req, err := http.NewRequest(http.MethodPost, reqURL.String(), bytes.NewReader(json))
+	var body *bytes.Reader
+	if reqBody != nil {
+		json, _ := json.MarshalIndent(reqBody, "", "\t")
+		body = bytes.NewReader(json)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, reqURL.String(), body)
 	if err != nil {
 		return err
 	}
@@ -95,7 +98,7 @@ func getAccessToken() (*AccessToken, error) {
 // トークン取得リクエスト
 func getTokenRequest() (*TokenResponse, error) {
 	resData := TokenResponse{}
-	err := postRequest("auth/token", nil, &TokenRequest{Id: Cfg.ClientId, Secret: Cfg.ClientSecret}, &resData)
+	err := request("client/token", http.MethodPost, nil, &TokenRequest{Id: Cfg.ClientId, Secret: Cfg.ClientSecret}, &resData)
 	return &resData, err
 }
 

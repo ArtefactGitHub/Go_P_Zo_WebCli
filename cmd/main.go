@@ -113,7 +113,7 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 		res, err := RequestSignin(email, password)
 		log.Printf("res: %v, err: %v", res, err)
 
-		if err != nil || res.StatusCode != http.StatusOK {
+		if err != nil || res.StatusCode != http.StatusCreated {
 			message := "認証情報が正しくありません"
 			if err != nil {
 				message = err.Error()
@@ -129,7 +129,9 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		Sm.StartSession(w, r, res.SessionData)
+		sessionData := &SessionData{UserId: res.UserToken.UserId, Token: res.UserToken.Token, ExpiredAt: res.UserToken.ExpiredAt}
+		log.Printf("sessionData: %v", sessionData)
+		Sm.StartSession(w, r, sessionData)
 
 		http.Redirect(w, r, "/user", http.StatusMovedPermanently)
 	}
@@ -155,6 +157,27 @@ func handleUser(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusMovedPermanently)
 		return
 	} else {
+		/*
+			res, err := RequestSignup(username, "", email, password)
+			log.Printf("res: %v, err: %v", res, err)
+
+			if err != nil || res.StatusCode != http.StatusCreated {
+				message := ""
+				if err != nil {
+					message = err.Error()
+				} else {
+					message = res.Error.Message
+				}
+
+				t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
+				t.Execute(w, map[string]interface{}{
+					"message":        message,
+					csrf.TemplateTag: csrf.TemplateField(r),
+				})
+				return
+			}
+		*/
+
 		t, _ := template.ParseFiles(pubPath + "/user/mypage.html")
 		log.Printf("session %v", session)
 		t.Execute(w, session)
