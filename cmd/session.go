@@ -53,7 +53,6 @@ func (m *SessionManager) StartSession(w http.ResponseWriter, r *http.Request, da
 
 	sessionId := m.NewSessionId()
 	data.SessionId = sessionId
-	data.Expire = time.Now().AddDate(0, 0, m.lifetimeDate)
 	m.sessions[sessionId] = data
 
 	m.setCookie(w, sessionId)
@@ -115,7 +114,7 @@ func (m *SessionManager) getSessionIdByCookie(r *http.Request) string {
 func (m *SessionManager) endExpiredSession() {
 	now := time.Now().Unix()
 	for k, v := range m.sessions {
-		if v.Expire.Unix() < now {
+		if v.ExpiredAt.Unix() < now {
 			log.Printf("delete session key: %s", k)
 			delete(m.sessions, k)
 		}

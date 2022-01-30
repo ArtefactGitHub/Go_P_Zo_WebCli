@@ -52,7 +52,7 @@ type PostUserResponseData struct {
 
 type PostLoginResponseData struct {
 	*ResponseBase
-	*SessionData
+	*UserToken
 }
 
 type User struct {
@@ -65,10 +65,18 @@ type User struct {
 	UpdatedAt  sql.NullTime `json:"updatedat"`
 }
 
+type UserToken struct {
+	Id        int          `json:"id"`
+	UserId    int          `json:"user_id"`
+	Token     string       `json:"token"`
+	ExpiredAt time.Time    `json:"expiredat"`
+	CreatedAt time.Time    `json:"createdat"`
+	UpdatedAt sql.NullTime `json:"updatedat"`
+}
+
 type SessionData struct {
-	SessionId  string
-	GivenName  string `json:"given_name"`
-	FamilyName string `json:"family_name"`
-	Email      string `json:"email"`
-	Expire     time.Time
+	SessionId string
+	UserId    int
+	Token     string
+	ExpiredAt time.Time
 }
