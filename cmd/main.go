@@ -152,12 +152,14 @@ func handleSignOut(w http.ResponseWriter, r *http.Request) {
 
 // マイページ
 func handleUser(w http.ResponseWriter, r *http.Request) {
+	s := NewService()
+
 	// セッションが存在しない
 	if session, err := Sm.GetSession(w, r); err != nil {
 		http.Redirect(w, r, "/signin", http.StatusMovedPermanently)
 		return
 	} else {
-		res, err := RequestGetUser(&session.UserToken)
+		res, err := s.GetMypageViewModel(&session.UserToken)
 		log.Printf("res: %v, err: %v", res, err)
 
 		if err != nil || res.StatusCode != http.StatusOK {
