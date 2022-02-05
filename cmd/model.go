@@ -5,6 +5,11 @@ import (
 	"time"
 )
 
+type IResponse interface {
+	GetBaseData() *ResponseBase
+	SetBaseData(statusCode int, error *myError)
+}
+
 type ResponseBase struct {
 	StatusCode int      `json:"statuscode"`
 	Error      *myError `json:"error"`
@@ -33,6 +38,13 @@ type TokenResponse struct {
 	AccessToken *AccessToken `json:"access_token"`
 }
 
+func (tr *TokenResponse) GetBaseData() *ResponseBase {
+	return tr.ResponseBase
+}
+func (tr *TokenResponse) SetBaseData(statusCode int, err *myError) {
+	tr.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
+}
+
 type PostUserReqestData struct {
 	GivenName  string `json:"given_name"`
 	FamilyName string `json:"family_name"`
@@ -50,9 +62,35 @@ type PostUserResponseData struct {
 	User *User `json:"user"`
 }
 
+func (tr *PostUserResponseData) GetBaseData() *ResponseBase {
+	return tr.ResponseBase
+}
+func (tr *PostUserResponseData) SetBaseData(statusCode int, err *myError) {
+	tr.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
+}
+
 type PostLoginResponseData struct {
 	*ResponseBase
 	*UserToken
+}
+
+func (tr *PostLoginResponseData) GetBaseData() *ResponseBase {
+	return tr.ResponseBase
+}
+func (tr *PostLoginResponseData) SetBaseData(statusCode int, err *myError) {
+	tr.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
+}
+
+type GetUserResponseData struct {
+	*ResponseBase
+	*ResponseUser
+}
+
+func (tr *GetUserResponseData) GetBaseData() *ResponseBase {
+	return tr.ResponseBase
+}
+func (tr *GetUserResponseData) SetBaseData(statusCode int, err *myError) {
+	tr.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
 }
 
 type User struct {
@@ -65,6 +103,13 @@ type User struct {
 	UpdatedAt  sql.NullTime `json:"updatedat"`
 }
 
+type ResponseUser struct {
+	Id         int    `json:"id"`
+	GivenName  string `json:"given_name"`
+	FamilyName string `json:"family_name"`
+	Email      string `json:"email"`
+}
+
 type UserToken struct {
 	Id        int          `json:"id"`
 	UserId    int          `json:"user_id"`
@@ -74,9 +119,11 @@ type UserToken struct {
 	UpdatedAt sql.NullTime `json:"updatedat"`
 }
 
+func (t *UserToken) IsExpired() bool {
+	return t.ExpiredAt.Unix() < time.Now().Unix()
+}
+
 type SessionData struct {
 	SessionId string
-	UserId    int
-	Token     string
-	ExpiredAt time.Time
+	UserToken
 }

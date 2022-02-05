@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -12,13 +13,18 @@ import (
 	"time"
 )
 
+const (
+	UserTokenHeaderName     = "X-Go_P_Zo_UserToken"
+	AuthorizationHeaderName = "Authorization"
+)
+
 var accessToken *AccessToken
 
 // ユーザー登録
 func RequestSignup(familyName, givenName, email, password string) (*PostUserResponseData, error) {
 	reqData := &PostUserReqestData{FamilyName: familyName, GivenName: givenName, Email: email, Password: password}
 	resData := &PostUserResponseData{}
-	err := Post("users", reqData, &resData)
+	err := Post("users", nil, reqData, resData, nil)
 	return resData, err
 }
 
@@ -26,28 +32,69 @@ func RequestSignup(familyName, givenName, email, password string) (*PostUserResp
 func RequestSignin(email, password string) (*PostLoginResponseData, error) {
 	reqData := &PostLoginRequestData{Identifier: email, Secret: password}
 	resData := &PostLoginResponseData{}
-	err := Post("usertokens", reqData, &resData)
+	err := Post("usertokens", nil, reqData, resData, nil)
 	return resData, err
 }
 
+// ユーザー情報取得
+func RequestGetUser(p *UserToken) (*GetUserResponseData, error) {
+	resData := &GetUserResponseData{}
+	err := Get(fmt.Sprintf("users/%d", p.UserId), nil, nil, resData, p)
+	return resData, err
+}
+
+// GET処理
+func Get(api string, reqHeader map[string]string, reqBody interface{}, resData IResponse, p *UserToken) error {
+	return request(api, http.MethodGet, nil, nil, resData, p)
+}
+
 // POST処理
-func Post(api string, reqBody interface{}, resData interface{}) error {
-	// Expire token
+func Post(api string, reqHeader map[string]string, reqBody interface{}, resData IResponse, p *UserToken) error {
+	return request(api, http.MethodPost, nil, reqBody, resData, p)
+}
+
+func request(api string, method string, reqHeader map[string]string, reqBody interface{}, resData IResponse, p *UserToken) error {
+	h := map[string]string{}
+
+	// Expire API Access token
 	if isInvalidToken() {
 		_, err := getAccessToken()
 		if err != nil {
 			return err
 		}
 	}
+	h[AuthorizationHeaderName] = fmt.Sprintf("Bearer %s", accessToken.Jwt)
 
-	reqHeader := map[string]string{"Authorization": fmt.Sprintf("Bearer %s", accessToken.Jwt)}
-	return request(api, http.MethodPost, reqHeader, reqBody, resData)
+	if p != nil {
+		// Expire User token
+		if p.IsExpired() {
+			resData.SetBaseData(http.StatusUnauthorized, &myError{"UserToken expired"})
+			return nil
+		}
+		h[UserTokenHeaderName] = p.Token
+	}
+
+	// add header
+	for k, v := range reqHeader {
+		if _, ok := h[k]; !ok {
+			h[k] = v
+		}
+	}
+
+	// send body
+	if reqBody != nil {
+		json, _ := json.MarshalIndent(reqBody, "", "\t")
+		body := bytes.NewReader(json)
+		return requestCore(api, method, h, body, resData)
+	} else {
+		return requestCore(api, method, h, nil, resData)
+	}
 }
 
 // リクエスト処理
-func request(api string, method string, reqHeader map[string]string, reqBody interface{}, resData interface{}) error {
+func requestCore(api string, method string, reqHeader map[string]string, body io.Reader, resData interface{}) error {
 	endpoint := "http://localhost:8000/api/v1/"
-	log.Printf("[Post] api: %s, method: %s, reqHeader: %v, reqData: %v", api, method, reqHeader, reqBody)
+	log.Printf("[Post] api: %s, method: %s, reqHeader: %v", api, method, reqHeader)
 
 	reqURL, err := url.Parse(endpoint)
 	if err != nil {
@@ -56,13 +103,7 @@ func request(api string, method string, reqHeader map[string]string, reqBody int
 	reqURL.Path = path.Join(reqURL.Path, api)
 	log.Printf("[Post] reqURL.Path: %s", reqURL.Path)
 
-	var body *bytes.Reader
-	if reqBody != nil {
-		json, _ := json.MarshalIndent(reqBody, "", "\t")
-		body = bytes.NewReader(json)
-	}
-
-	req, err := http.NewRequest(http.MethodPost, reqURL.String(), body)
+	req, err := http.NewRequest(method, reqURL.String(), body)
 	if err != nil {
 		return err
 	}
@@ -97,9 +138,14 @@ func getAccessToken() (*AccessToken, error) {
 
 // トークン取得リクエスト
 func getTokenRequest() (*TokenResponse, error) {
-	resData := TokenResponse{}
-	err := request("client/token", http.MethodPost, nil, &TokenRequest{Id: Cfg.ClientId, Secret: Cfg.ClientSecret}, &resData)
-	return &resData, err
+	resData := &TokenResponse{}
+
+	var body *bytes.Reader
+	json, _ := json.MarshalIndent(TokenRequest{Id: Cfg.ClientId, Secret: Cfg.ClientSecret}, "", "\t")
+	body = bytes.NewReader(json)
+
+	err := requestCore("client/token", http.MethodPost, nil, body, resData)
+	return resData, err
 }
 
 // httpリクエスト処理

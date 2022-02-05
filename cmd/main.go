@@ -129,7 +129,7 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		sessionData := &SessionData{UserId: res.UserToken.UserId, Token: res.UserToken.Token, ExpiredAt: res.UserToken.ExpiredAt}
+		sessionData := &SessionData{UserToken: *res.UserToken}
 		log.Printf("sessionData: %v", sessionData)
 		Sm.StartSession(w, r, sessionData)
 
@@ -157,26 +157,24 @@ func handleUser(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "/signin", http.StatusMovedPermanently)
 		return
 	} else {
-		/*
-			res, err := RequestSignup(username, "", email, password)
-			log.Printf("res: %v, err: %v", res, err)
+		res, err := RequestGetUser(&session.UserToken)
+		log.Printf("res: %v, err: %v", res, err)
 
-			if err != nil || res.StatusCode != http.StatusCreated {
-				message := ""
-				if err != nil {
-					message = err.Error()
-				} else {
-					message = res.Error.Message
-				}
-
-				t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
-				t.Execute(w, map[string]interface{}{
-					"message":        message,
-					csrf.TemplateTag: csrf.TemplateField(r),
-				})
-				return
+		if err != nil || res.StatusCode != http.StatusOK {
+			message := "ユーザー情報が取得できません。再度ログインをお願いします。"
+			if err != nil {
+				message += err.Error()
+			} else if res.Error != nil {
+				message += res.Error.Message
 			}
-		*/
+
+			t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
+			t.Execute(w, map[string]interface{}{
+				"message":        message,
+				csrf.TemplateTag: csrf.TemplateField(r),
+			})
+			return
+		}
 
 		t, _ := template.ParseFiles(pubPath + "/user/mypage.html")
 		log.Printf("session %v", session)
