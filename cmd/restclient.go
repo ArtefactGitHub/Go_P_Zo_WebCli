@@ -43,6 +43,13 @@ func RequestGetUser(p *UserToken) (*GetUserResponseData, error) {
 	return resData, err
 }
 
+// zo情報取得
+func RequestGetAllZo(p *UserToken) (*GetAllZoResponseData, error) {
+	resData := &GetAllZoResponseData{}
+	err := Get("zos", nil, nil, resData, p)
+	return resData, err
+}
+
 // GET処理
 func Get(api string, reqHeader map[string]string, reqBody interface{}, resData IResponse, p *UserToken) error {
 	return request(api, http.MethodGet, nil, nil, resData, p)

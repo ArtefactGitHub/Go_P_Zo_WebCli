@@ -162,8 +162,9 @@ func handleUser(w http.ResponseWriter, r *http.Request) {
 		res, err := s.GetMypageViewModel(&session.UserToken)
 		log.Printf("res: %v, err: %v", res, err)
 
+		message := ""
 		if err != nil || res.StatusCode != http.StatusOK {
-			message := "ユーザー情報が取得できません。再度ログインをお願いします。"
+			message = "ユーザー情報が取得できません。再度ログインをお願いします。"
 			if err != nil {
 				message += err.Error()
 			} else if res.Error != nil {
@@ -180,6 +181,9 @@ func handleUser(w http.ResponseWriter, r *http.Request) {
 
 		t, _ := template.ParseFiles(pubPath + "/user/mypage.html")
 		log.Printf("session %v", session)
-		t.Execute(w, session)
+		t.Execute(w, map[string]interface{}{
+			"message": message,
+			"model":   res,
+		})
 	}
 }

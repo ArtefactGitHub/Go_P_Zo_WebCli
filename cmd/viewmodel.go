@@ -1,9 +1,12 @@
 package main
 
-type mypageGetModel struct {
-	ResponseUser
+type MypageGetModel struct {
+	*ResponseBase
+	Name  string
+	Email string
+	Zos   Zos
 }
 
-func NewMypageGetModel() *mypageGetModel {
-	return &mypageGetModel{}
+func NewMypageGetModel(name, email string, zos Zos, base *ResponseBase) *MypageGetModel {
+	return &MypageGetModel{Name: name, Email: email, Zos: zos, ResponseBase: base}
 }

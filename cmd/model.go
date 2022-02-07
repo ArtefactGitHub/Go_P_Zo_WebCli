@@ -83,7 +83,7 @@ func (tr *PostLoginResponseData) SetBaseData(statusCode int, err *myError) {
 
 type GetUserResponseData struct {
 	*ResponseBase
-	*ResponseUser
+	*User `json:"user"`
 }
 
 func (tr *GetUserResponseData) GetBaseData() *ResponseBase {
@@ -94,16 +94,6 @@ func (tr *GetUserResponseData) SetBaseData(statusCode int, err *myError) {
 }
 
 type User struct {
-	Id         int          `json:"id"`
-	GivenName  string       `json:"given_name"`
-	FamilyName string       `json:"family_name"`
-	Email      string       `json:"email"`
-	Password   string       `json:"password"`
-	CreatedAt  time.Time    `json:"createdat"`
-	UpdatedAt  sql.NullTime `json:"updatedat"`
-}
-
-type ResponseUser struct {
 	Id         int    `json:"id"`
 	GivenName  string `json:"given_name"`
 	FamilyName string `json:"family_name"`
@@ -126,4 +116,29 @@ func (t *UserToken) IsExpired() bool {
 type SessionData struct {
 	SessionId string
 	UserToken
+}
+
+type Zo struct {
+	Id              int       `json:"id"`
+	AchievementDate time.Time `json:"achievementdate"`
+	Exp             int       `json:"exp"`
+	CategoryId      int       `json:"categoryid"`
+	Message         string    `json:"message"`
+	UserId          int       `json:"user_id"`
+}
+
+type Zos struct {
+	Zos []Zo `json:"zos"`
+}
+
+type GetAllZoResponseData struct {
+	*ResponseBase
+	*Zos
+}
+
+func (d *GetAllZoResponseData) GetBaseData() *ResponseBase {
+	return d.ResponseBase
+}
+func (d *GetAllZoResponseData) SetBaseData(statusCode int, err *myError) {
+	d.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
 }
