@@ -23,7 +23,7 @@ func main() {
 	r.HandleFunc("/signup", handleSignUp)
 	r.HandleFunc("/signin", handleSignIn)
 	r.HandleFunc("/signout", handleSignOut)
-	r.HandleFunc("/user", handleUser)
+	r.HandleFunc("/mypage", handleMypage)
 	r.HandleFunc("/", handleHome)
 
 	// セッション管理起動
@@ -59,7 +59,7 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 				csrf.TemplateTag: csrf.TemplateField(r),
 			})
 		} else {
-			http.Redirect(w, r, "/user", http.StatusMovedPermanently)
+			http.Redirect(w, r, "/mypage", http.StatusMovedPermanently)
 			return
 		}
 	} else if r.Method == http.MethodPost {
@@ -88,7 +88,7 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		http.Redirect(w, r, "/user", http.StatusMovedPermanently)
+		http.Redirect(w, r, "/mypage", http.StatusMovedPermanently)
 	}
 }
 
@@ -102,7 +102,7 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 				csrf.TemplateTag: csrf.TemplateField(r),
 			})
 		} else {
-			http.Redirect(w, r, "/user", http.StatusMovedPermanently)
+			http.Redirect(w, r, "/mypage", http.StatusMovedPermanently)
 			return
 		}
 	} else if r.Method == http.MethodPost {
@@ -133,7 +133,7 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 		log.Printf("sessionData: %v", sessionData)
 		Sm.StartSession(w, r, sessionData)
 
-		http.Redirect(w, r, "/user", http.StatusMovedPermanently)
+		http.Redirect(w, r, "/mypage", http.StatusMovedPermanently)
 	}
 }
 
@@ -151,15 +151,18 @@ func handleSignOut(w http.ResponseWriter, r *http.Request) {
 }
 
 // マイページ
-func handleUser(w http.ResponseWriter, r *http.Request) {
+func handleMypage(w http.ResponseWriter, r *http.Request) {
 	s := NewService()
 
 	// セッションが存在しない
-	if session, err := Sm.GetSession(w, r); err != nil {
+	session, err := Sm.GetSession(w, r)
+	if err != nil {
 		http.Redirect(w, r, "/signin", http.StatusMovedPermanently)
 		return
-	} else {
-		res, err := s.GetMypageViewModel(&session.UserToken)
+	}
+
+	if r.Method == http.MethodGet {
+		res, err := s.GetMypage(&session.UserToken)
 		log.Printf("res: %v, err: %v", res, err)
 
 		message := ""
@@ -179,11 +182,29 @@ func handleUser(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		t, _ := template.ParseFiles(pubPath + "/user/mypage.html")
+		t, _ := template.ParseFiles(pubPath + "/mypage/index.html")
 		log.Printf("session %v", session)
 		t.Execute(w, map[string]interface{}{
-			"message": message,
-			"model":   res,
+			"message":        message,
+			"model":          res,
+			csrf.TemplateTag: csrf.TemplateField(r),
 		})
+	} else {
+		_, err = s.PostNewZo(&session.UserToken, r.Form)
+		if err != nil {
+			ErrorPage(w, r, err.Error())
+			return
+		}
+
+		http.Redirect(w, r, "/mypage", http.StatusMovedPermanently)
 	}
+}
+
+// TODO
+func ErrorPage(w http.ResponseWriter, r *http.Request, message string) {
+	t, _ := template.ParseFiles(pubPath + "/home/index.html")
+	t.Execute(w, map[string]interface{}{
+		"isLogin": true,
+		"message": message,
+	})
 }

@@ -50,6 +50,13 @@ func RequestGetAllZo(p *UserToken) (*GetAllZoResponseData, error) {
 	return resData, err
 }
 
+// zo作成
+func RequestPostZo(p *UserToken, rz *requestZo) (*PostZoResponseData, error) {
+	resData := &PostZoResponseData{}
+	err := Post("zos", nil, rz, resData, p)
+	return resData, err
+}
+
 // GET処理
 func Get(api string, reqHeader map[string]string, reqBody interface{}, resData IResponse, p *UserToken) error {
 	return request(api, http.MethodGet, nil, nil, resData, p)
