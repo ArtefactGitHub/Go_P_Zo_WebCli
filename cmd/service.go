@@ -27,7 +27,7 @@ func (s *service) GetMypage(userToken *UserToken) (*MypageGetModel, error) {
 	}
 
 	result := NewMypageGetModel(resUser.FamilyName+resUser.GivenName, resUser.Email, *resZo.Zos, resZo.ResponseBase)
-	return result, err
+	return result.Present(gPresenter), err
 }
 
 func (s *service) PostNewZo(userToken *UserToken, values url.Values) (*MypageGetModel, error) {

@@ -119,16 +119,17 @@ type SessionData struct {
 }
 
 type Zo struct {
-	Id              int       `json:"id"`
-	AchievementDate time.Time `json:"achievementdate"`
-	Exp             int       `json:"exp"`
-	CategoryId      int       `json:"categoryid"`
-	Message         string    `json:"message"`
-	UserId          int       `json:"user_id"`
+	Id                 int       `json:"id"`
+	AchievementDate    time.Time `json:"achievementdate"`
+	Exp                int       `json:"exp"`
+	CategoryId         int       `json:"categoryid"`
+	Message            string    `json:"message"`
+	UserId             int       `json:"user_id"`
+	AchievementDateStr string
 }
 
 type Zos struct {
-	Zos []Zo `json:"zos"`
+	Zos []*Zo `json:"zos"`
 }
 
 type GetAllZoResponseData struct {

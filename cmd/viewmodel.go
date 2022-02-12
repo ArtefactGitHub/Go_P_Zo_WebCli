@@ -13,6 +13,13 @@ type MypageGetModel struct {
 	Zos   Zos
 }
 
+func (m *MypageGetModel) Present(p *Presenter) *MypageGetModel {
+	for _, z := range m.Zos.Zos {
+		z.AchievementDateStr = p.TimeToStr(z.AchievementDate)
+	}
+	return m
+}
+
 func NewMypageGetModel(name, email string, zos Zos, base *ResponseBase) *MypageGetModel {
 	return &MypageGetModel{Name: name, Email: email, Zos: zos, ResponseBase: base}
 }

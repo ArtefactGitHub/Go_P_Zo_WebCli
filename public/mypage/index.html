@@ -10,11 +10,12 @@
 <body>
     <h1>mypage</h1>
 
+    <h2>▼ユーザー情報</h2>
     <p>Name: {{.model.Name}}</p>
     <p>Email: {{.model.Email}}</p>
 
-    <h2>Zo一覧</h2>
-
+    <h2>▼Zo情報</h2>
+    <h3>作成</h3>
     <form action="" method="post">
         <div>
             <label for="achievementdate">達成日</label>
@@ -33,14 +34,22 @@
     </form>
     <br>
 
+
+    <h3>一覧</h3>
     <table class="list">
         <tr>
             <th>ID</th>
-            <th>内容</th>
+            <th>達成日</th>
+            <th>獲得経験値</th>
+            <th>カテゴリーID</th>
+            <th>メッセージ</th>
         </tr>
         {{ range .model.Zos.Zos }}
         <tr>
             <td>{{.Id}}</td>
+            <td>{{.AchievementDateStr}}</td>
+            <td>{{.Exp}}</td>
+            <td>{{.CategoryId}}</td>
             <td>{{.Message}}</td>
         </tr>
         {{ end }}
