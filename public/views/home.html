@@ -1,29 +1,5 @@
-<!DOCTYPE html>
-<html lang="ja">
+{{ define "content" }}
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
-    <title>home</title>
-</head>
+<h1>Home</h1>
 
-<body>
-    <h1>Zo Web Cli</h1>
-    <p>{{.message}}</p>
-
-    {{ if .isLogin }}
-    <a href="/user">mypage</a>
-    <form action="signout" method="POST">
-        {{.csrfField}}
-        <input type="submit" value="logout">
-    </form>
-    {{ else }}
-    <a href="/signup">signup</a>
-    <a href="/signin">signin</a>
-    {{ end }}
-</body>
-
-<script src="/static/js/bootstrap.min.js"></script>
-
-</html>
+{{ end }}

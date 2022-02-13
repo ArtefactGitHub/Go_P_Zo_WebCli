@@ -14,6 +14,7 @@ const (
 	pubPath             = "../public"
 	staticFilePath      = "/static/"
 	viewFilePath        = pubPath + "/views/"
+	layoutFilePath      = pubPath + "/layouts/"
 	port                = "8080"
 	cookie_key_session  = "go_p_zo_webcli_cookie_key_session"
 	sessionLifetimeDate = 1
@@ -47,8 +48,8 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 		isLogin = true
 	}
 
-	t, _ := template.ParseFiles(viewFilePath + "home.html")
-	t.Execute(w, map[string]interface{}{
+	t, _ := template.ParseFiles(layoutFilePath+"layout.html", viewFilePath+"home.html")
+	t.ExecuteTemplate(w, "layout", map[string]interface{}{
 		"isLogin":        isLogin,
 		csrf.TemplateTag: csrf.TemplateField(r),
 	})
