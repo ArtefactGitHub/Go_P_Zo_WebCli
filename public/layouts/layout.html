@@ -15,7 +15,7 @@
     <p>{{.message}}</p>
 
     {{ if .isLogin }}
-    <a href="/user">mypage</a>
+    <a href="/mypage">mypage</a>
     <form action="signout" method="POST">
         {{.csrfField}}
         <input type="submit" value="logout">
@@ -25,7 +25,7 @@
     <a href="/signin">signin</a>
     {{ end }}
 
-    {{ template "content" }}
+    {{ template "content" . }}
 </body>
 
 <script src="/static/js/bootstrap.min.js"></script>

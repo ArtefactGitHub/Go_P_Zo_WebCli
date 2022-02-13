@@ -14,7 +14,8 @@ const (
 	pubPath             = "../public"
 	staticFilePath      = "/static/"
 	viewFilePath        = pubPath + "/views/"
-	layoutFilePath      = pubPath + "/layouts/"
+	layoutFilePath      = pubPath + "/layouts/layout.html"
+	layoutName          = "layout"
 	port                = "8080"
 	cookie_key_session  = "go_p_zo_webcli_cookie_key_session"
 	sessionLifetimeDate = 1
@@ -48,8 +49,8 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 		isLogin = true
 	}
 
-	t, _ := template.ParseFiles(layoutFilePath+"layout.html", viewFilePath+"home.html")
-	t.ExecuteTemplate(w, "layout", map[string]interface{}{
+	t, _ := template.ParseFiles(layoutFilePath, viewFilePath+"home.html")
+	t.ExecuteTemplate(w, layoutName, map[string]interface{}{
 		"isLogin":        isLogin,
 		csrf.TemplateTag: csrf.TemplateField(r),
 	})
@@ -60,8 +61,8 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		// セッションが存在しない
 		if _, err := Sm.GetSession(w, r); err != nil {
-			t, _ := template.ParseFiles(viewFilePath + "signup.html")
-			t.Execute(w, map[string]interface{}{
+			t, _ := template.ParseFiles(layoutFilePath, viewFilePath+"signup.html")
+			t.ExecuteTemplate(w, layoutName, map[string]interface{}{
 				csrf.TemplateTag: csrf.TemplateField(r),
 			})
 		} else {
@@ -86,8 +87,8 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 				message = res.Error.Message
 			}
 
-			t, _ := template.ParseFiles(viewFilePath + "signup.html")
-			t.Execute(w, map[string]interface{}{
+			t, _ := template.ParseFiles(layoutFilePath, viewFilePath+"signup.html")
+			t.ExecuteTemplate(w, layoutName, map[string]interface{}{
 				"message":        message,
 				csrf.TemplateTag: csrf.TemplateField(r),
 			})
@@ -103,8 +104,8 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		// セッションが存在しない
 		if _, err := Sm.GetSession(w, r); err != nil {
-			t, _ := template.ParseFiles(viewFilePath + "signin.html")
-			t.Execute(w, map[string]interface{}{
+			t, _ := template.ParseFiles(layoutFilePath, viewFilePath+"signin.html")
+			t.ExecuteTemplate(w, layoutName, map[string]interface{}{
 				csrf.TemplateTag: csrf.TemplateField(r),
 			})
 		} else {
@@ -127,8 +128,8 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 				message = res.Error.Message
 			}
 
-			t, _ := template.ParseFiles(viewFilePath + "signin.html")
-			t.Execute(w, map[string]interface{}{
+			t, _ := template.ParseFiles(layoutFilePath, viewFilePath+"signin.html")
+			t.ExecuteTemplate(w, layoutName, map[string]interface{}{
 				"message":        message,
 				csrf.TemplateTag: csrf.TemplateField(r),
 			})
@@ -152,8 +153,8 @@ func handleSignOut(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	t, _ := template.ParseFiles(viewFilePath + "home.html")
-	t.Execute(w, nil)
+	t, _ := template.ParseFiles(layoutFilePath, viewFilePath+"home.html")
+	t.ExecuteTemplate(w, layoutName, nil)
 }
 
 // マイページ
@@ -180,8 +181,8 @@ func handleMypage(w http.ResponseWriter, r *http.Request) {
 				message += res.Error.Message
 			}
 
-			t, _ := template.ParseFiles(viewFilePath + "signup.html")
-			t.Execute(w, map[string]interface{}{
+			t, _ := template.ParseFiles(layoutFilePath, viewFilePath+"signup.html")
+			t.ExecuteTemplate(w, layoutName, map[string]interface{}{
 				"message":        message,
 				csrf.TemplateTag: csrf.TemplateField(r),
 			})
@@ -190,9 +191,9 @@ func handleMypage(w http.ResponseWriter, r *http.Request) {
 
 		funcMap := template.FuncMap{"TimeToSimple": gPresenter.TimeToSimple}
 		t := template.New("mypage.html").Funcs(funcMap)
-		t, _ = t.ParseFiles(viewFilePath + "mypage.html")
+		t, _ = t.ParseFiles(layoutFilePath, viewFilePath+"mypage.html")
 		log.Printf("session %v", session)
-		t.Execute(w, map[string]interface{}{
+		t.ExecuteTemplate(w, layoutName, map[string]interface{}{
 			"message":        message,
 			"model":          res,
 			csrf.TemplateTag: csrf.TemplateField(r),
@@ -210,8 +211,8 @@ func handleMypage(w http.ResponseWriter, r *http.Request) {
 
 // TODO
 func ErrorPage(w http.ResponseWriter, r *http.Request, message string) {
-	t, _ := template.ParseFiles(viewFilePath + "home.html")
-	t.Execute(w, map[string]interface{}{
+	t, _ := template.ParseFiles(layoutFilePath, viewFilePath+"home.html")
+	t.ExecuteTemplate(w, layoutName, map[string]interface{}{
 		"isLogin": true,
 		"message": message,
 	})
