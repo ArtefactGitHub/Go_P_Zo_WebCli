@@ -10,10 +10,13 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const pubPath = "../public"
-const port = "8080"
-const cookie_key_session string = "go_p_zo_webcli_cookie_key_session"
-const sessionLifetimeDate int = 1
+const (
+	pubPath             = "../public"
+	staticFilePath      = "/static/"
+	port                = "8080"
+	cookie_key_session  = "go_p_zo_webcli_cookie_key_session"
+	sessionLifetimeDate = 1
+)
 
 func main() {
 	// csrf認証キーの取得
@@ -24,6 +27,7 @@ func main() {
 	r.HandleFunc("/signin", handleSignIn)
 	r.HandleFunc("/signout", handleSignOut)
 	r.HandleFunc("/mypage", handleMypage)
+	r.PathPrefix("/static/").Handler(http.FileServer(http.Dir(pubPath)))
 	r.HandleFunc("/", handleHome)
 
 	// セッション管理起動
