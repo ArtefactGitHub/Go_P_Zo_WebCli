@@ -47,7 +47,7 @@
         {{ range .model.Zos.Zos }}
         <tr>
             <td>{{.Id}}</td>
-            <td>{{.AchievementDateStr}}</td>
+            <td>{{.AchievementDate | TimeToSimple}}</td>
             <td>{{.Exp}}</td>
             <td>{{.CategoryId}}</td>
             <td>{{.Message}}</td>

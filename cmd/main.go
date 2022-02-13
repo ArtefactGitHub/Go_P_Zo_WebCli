@@ -186,7 +186,9 @@ func handleMypage(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		t, _ := template.ParseFiles(pubPath + "/mypage/index.html")
+		funcMap := template.FuncMap{"TimeToSimple": gPresenter.TimeToSimple}
+		t := template.New("index.html").Funcs(funcMap)
+		t, _ = t.ParseFiles(pubPath + "/mypage/index.html")
 		log.Printf("session %v", session)
 		t.Execute(w, map[string]interface{}{
 			"message":        message,
