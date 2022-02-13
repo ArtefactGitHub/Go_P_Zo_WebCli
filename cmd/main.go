@@ -13,6 +13,7 @@ import (
 const (
 	pubPath             = "../public"
 	staticFilePath      = "/static/"
+	viewFilePath        = pubPath + "/views/"
 	port                = "8080"
 	cookie_key_session  = "go_p_zo_webcli_cookie_key_session"
 	sessionLifetimeDate = 1
@@ -46,7 +47,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 		isLogin = true
 	}
 
-	t, _ := template.ParseFiles(pubPath + "/home/index.html")
+	t, _ := template.ParseFiles(viewFilePath + "home.html")
 	t.Execute(w, map[string]interface{}{
 		"isLogin":        isLogin,
 		csrf.TemplateTag: csrf.TemplateField(r),
@@ -58,7 +59,7 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		// セッションが存在しない
 		if _, err := Sm.GetSession(w, r); err != nil {
-			t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
+			t, _ := template.ParseFiles(viewFilePath + "signup.html")
 			t.Execute(w, map[string]interface{}{
 				csrf.TemplateTag: csrf.TemplateField(r),
 			})
@@ -84,7 +85,7 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 				message = res.Error.Message
 			}
 
-			t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
+			t, _ := template.ParseFiles(viewFilePath + "signup.html")
 			t.Execute(w, map[string]interface{}{
 				"message":        message,
 				csrf.TemplateTag: csrf.TemplateField(r),
@@ -101,7 +102,7 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		// セッションが存在しない
 		if _, err := Sm.GetSession(w, r); err != nil {
-			t, _ := template.ParseFiles(pubPath + "/auth/signin.html")
+			t, _ := template.ParseFiles(viewFilePath + "signin.html")
 			t.Execute(w, map[string]interface{}{
 				csrf.TemplateTag: csrf.TemplateField(r),
 			})
@@ -125,7 +126,7 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 				message = res.Error.Message
 			}
 
-			t, _ := template.ParseFiles(pubPath + "/auth/signin.html")
+			t, _ := template.ParseFiles(viewFilePath + "signin.html")
 			t.Execute(w, map[string]interface{}{
 				"message":        message,
 				csrf.TemplateTag: csrf.TemplateField(r),
@@ -150,7 +151,7 @@ func handleSignOut(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	t, _ := template.ParseFiles(pubPath + "/home/index.html")
+	t, _ := template.ParseFiles(viewFilePath + "home.html")
 	t.Execute(w, nil)
 }
 
@@ -178,7 +179,7 @@ func handleMypage(w http.ResponseWriter, r *http.Request) {
 				message += res.Error.Message
 			}
 
-			t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
+			t, _ := template.ParseFiles(viewFilePath + "signup.html")
 			t.Execute(w, map[string]interface{}{
 				"message":        message,
 				csrf.TemplateTag: csrf.TemplateField(r),
@@ -187,8 +188,8 @@ func handleMypage(w http.ResponseWriter, r *http.Request) {
 		}
 
 		funcMap := template.FuncMap{"TimeToSimple": gPresenter.TimeToSimple}
-		t := template.New("index.html").Funcs(funcMap)
-		t, _ = t.ParseFiles(pubPath + "/mypage/index.html")
+		t := template.New("mypage.html").Funcs(funcMap)
+		t, _ = t.ParseFiles(viewFilePath + "mypage.html")
 		log.Printf("session %v", session)
 		t.Execute(w, map[string]interface{}{
 			"message":        message,
@@ -208,7 +209,7 @@ func handleMypage(w http.ResponseWriter, r *http.Request) {
 
 // TODO
 func ErrorPage(w http.ResponseWriter, r *http.Request, message string) {
-	t, _ := template.ParseFiles(pubPath + "/home/index.html")
+	t, _ := template.ParseFiles(viewFilePath + "home.html")
 	t.Execute(w, map[string]interface{}{
 		"isLogin": true,
 		"message": message,
