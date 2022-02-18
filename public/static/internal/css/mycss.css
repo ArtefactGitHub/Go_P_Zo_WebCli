@@ -1,0 +1,27 @@
+html {
+  height: 100%;
+}
+
+body {
+  height: 100%;
+}
+
+.container{
+  height: 100%;
+  align-content: center;
+}
+
+.signin{
+  height: 100%;
+  align-content: center;
+}
+
+.signin-card{
+  margin-top: 10rem;
+  height: 23rem;
+}
+
+.signup-card{
+  margin-top: 10rem;
+  height: 26rem;
+}
