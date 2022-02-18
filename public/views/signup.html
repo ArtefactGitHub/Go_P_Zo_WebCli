@@ -1,19 +1,32 @@
 {{ define "content" }}
 
-<h1>signup</h1>
-<form action="/signup" method="POST">
-    ユーザー名：<input type="text" name="username">
-    <br />
-    Email：<input type="email" name="email">
-    <br />
-    パスワード：<input type="password" name="password">
-    <br />
-    {{.csrfField}}
-    <input type="submit" value="送信">
-</form>
-
-<p>{{.message}}</p>
-
-<a href="/">home</a>
+<row>
+    <div class="d-flex justify-content-center signin">
+        <div class="col-lg-6 card signup-card">
+            <div class="card-body ">
+                <h5 class="card-title">登録</h5>
+                <form action="/signup" method="POST" class=" px-5 py-5" id="form1">
+                    <div class="form-data">
+                        <div class="forms-inputs mb-4 myinput-label">
+                            <span>ユーザー名</span>
+                            <input type="text" class="w-100" name="username">
+                        </div>
+                        <div class="forms-inputs mb-4 myinput-label">
+                            <span>メールアドレス</span>
+                            <input type="text" class="w-100" name="email">
+                        </div>
+                        <div class="forms-inputs mb-4 myinput-label">
+                            <span>パスワード</span>
+                            <input type="password" class="w-100" name="password">
+                        </div>
+                        <div class="mt-5">
+                            {{.csrfField}}
+                            <button type="submit" class="btn btn-dark w-100">登録</button>
+                        </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</row>
 
 {{ end }}
