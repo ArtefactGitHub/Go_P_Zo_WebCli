@@ -1,0 +1,26 @@
+{{ define "content" }}
+<row>
+    <div class="d-flex justify-content-center signin">
+        <div class="col-lg-6 card signin-card">
+            <div class="card-body ">
+                <h5 class="card-title">ログイン</h5>
+                <form action="/signin" method="POST" class=" px-5 py-5" id="form1">
+                    <div class="form-data">
+                        <div class="forms-inputs mb-4 myinput-label">
+                            <span>Email or username</span>
+                            <input autocomplete="off" type="text" class="w-100" name="email">
+                        </div>
+                        <div class="forms-inputs mb-4 myinput-label">
+                            <span>Password</span>
+                            <input autocomplete="off" type="password" class="w-100" name="password">
+                        </div>
+                        <div class="mt-5">
+                            {{.csrfField}}
+                            <button type="submit" class="btn btn-dark w-100">Login</button>
+                        </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</row>
+{{ end }}

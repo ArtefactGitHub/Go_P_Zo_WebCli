@@ -10,10 +10,19 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const pubPath = "../public"
-const port = "8080"
-const cookie_key_session string = "go_p_zo_webcli_cookie_key_session"
-const sessionLifetimeDate int = 1
+const (
+	pubPath             = "../public"
+	externalFilePath    = "/static/external/"
+	internalFilePath    = "/static/internal/"
+	viewFilePath        = pubPath + "/views/"
+	layoutFilePath      = pubPath + "/layouts/layout.html"
+	layoutName          = "layout"
+	port                = "8080"
+	cookie_key_session  = "go_p_zo_webcli_cookie_key_session"
+	sessionLifetimeDate = 1
+)
+
+type ViewArgs map[string]interface{}
 
 func main() {
 	// csrf認証キーの取得
@@ -24,6 +33,8 @@ func main() {
 	r.HandleFunc("/signin", handleSignIn)
 	r.HandleFunc("/signout", handleSignOut)
 	r.HandleFunc("/mypage", handleMypage)
+	r.PathPrefix(externalFilePath).Handler(http.FileServer(http.Dir(pubPath)))
+	r.PathPrefix(internalFilePath).Handler(http.FileServer(http.Dir(pubPath)))
 	r.HandleFunc("/", handleHome)
 
 	// セッション管理起動
@@ -37,16 +48,7 @@ func main() {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	isLogin := false
-	if _, err := Sm.GetSession(w, r); err == nil {
-		isLogin = true
-	}
-
-	t, _ := template.ParseFiles(pubPath + "/home/index.html")
-	t.Execute(w, map[string]interface{}{
-		"isLogin":        isLogin,
-		csrf.TemplateTag: csrf.TemplateField(r),
-	})
+	http.Redirect(w, r, "/signin", http.StatusMovedPermanently)
 }
 
 // ユーザー登録
@@ -54,10 +56,7 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		// セッションが存在しない
 		if _, err := Sm.GetSession(w, r); err != nil {
-			t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
-			t.Execute(w, map[string]interface{}{
-				csrf.TemplateTag: csrf.TemplateField(r),
-			})
+			ExecuteTemplate(w, r, "signup", ViewArgs{csrf.TemplateTag: csrf.TemplateField(r)})
 		} else {
 			http.Redirect(w, r, "/mypage", http.StatusMovedPermanently)
 			return
@@ -80,11 +79,7 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 				message = res.Error.Message
 			}
 
-			t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
-			t.Execute(w, map[string]interface{}{
-				"message":        message,
-				csrf.TemplateTag: csrf.TemplateField(r),
-			})
+			ExecuteTemplate(w, r, "signup", ViewArgs{"message": message, csrf.TemplateTag: csrf.TemplateField(r)})
 			return
 		}
 
@@ -97,10 +92,7 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		// セッションが存在しない
 		if _, err := Sm.GetSession(w, r); err != nil {
-			t, _ := template.ParseFiles(pubPath + "/auth/signin.html")
-			t.Execute(w, map[string]interface{}{
-				csrf.TemplateTag: csrf.TemplateField(r),
-			})
+			ExecuteTemplate(w, r, "signin", ViewArgs{csrf.TemplateTag: csrf.TemplateField(r)})
 		} else {
 			http.Redirect(w, r, "/mypage", http.StatusMovedPermanently)
 			return
@@ -121,11 +113,7 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 				message = res.Error.Message
 			}
 
-			t, _ := template.ParseFiles(pubPath + "/auth/signin.html")
-			t.Execute(w, map[string]interface{}{
-				"message":        message,
-				csrf.TemplateTag: csrf.TemplateField(r),
-			})
+			ExecuteTemplate(w, r, "signin", ViewArgs{"message": message, csrf.TemplateTag: csrf.TemplateField(r)})
 			return
 		}
 
@@ -146,8 +134,7 @@ func handleSignOut(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	t, _ := template.ParseFiles(pubPath + "/home/index.html")
-	t.Execute(w, nil)
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
 
 // マイページ
@@ -174,21 +161,15 @@ func handleMypage(w http.ResponseWriter, r *http.Request) {
 				message += res.Error.Message
 			}
 
-			t, _ := template.ParseFiles(pubPath + "/auth/signup.html")
-			t.Execute(w, map[string]interface{}{
-				"message":        message,
-				csrf.TemplateTag: csrf.TemplateField(r),
-			})
+			ExecuteTemplate(w, r, "signup", ViewArgs{"message": message, csrf.TemplateTag: csrf.TemplateField(r)})
 			return
 		}
 
-		t, _ := template.ParseFiles(pubPath + "/mypage/index.html")
-		log.Printf("session %v", session)
-		t.Execute(w, map[string]interface{}{
+		ExecuteTemplateWithFunc(w, r, "mypage", ViewArgs{
 			"message":        message,
 			"model":          res,
 			csrf.TemplateTag: csrf.TemplateField(r),
-		})
+		}, template.FuncMap{"TimeToSimple": gPresenter.TimeToSimple})
 	} else {
 		_, err = s.PostNewZo(&session.UserToken, r.Form)
 		if err != nil {
@@ -202,9 +183,30 @@ func handleMypage(w http.ResponseWriter, r *http.Request) {
 
 // TODO
 func ErrorPage(w http.ResponseWriter, r *http.Request, message string) {
-	t, _ := template.ParseFiles(pubPath + "/home/index.html")
-	t.Execute(w, map[string]interface{}{
-		"isLogin": true,
-		"message": message,
-	})
+	ExecuteTemplate(w, r, "/", ViewArgs{"message": message})
+}
+
+func IsLogin(w http.ResponseWriter, r *http.Request) bool {
+	result := false
+	if _, err := Sm.GetSession(w, r); err == nil {
+		result = true
+	}
+	return result
+}
+
+func ExecuteTemplate(w http.ResponseWriter, r *http.Request, viewName string, args ViewArgs) {
+	t, _ := template.ParseFiles(layoutFilePath, viewFilePath+viewName+".html")
+	t.ExecuteTemplate(w, layoutName, args.Add("isLogin", IsLogin(w, r)))
+}
+
+func ExecuteTemplateWithFunc(w http.ResponseWriter, r *http.Request, viewName string, args ViewArgs, funcMap template.FuncMap) {
+	t, _ := template.New(viewName+".html").
+		Funcs(template.FuncMap{"TimeToSimple": gPresenter.TimeToSimple}).
+		ParseFiles(layoutFilePath, viewFilePath+viewName+".html")
+	t.ExecuteTemplate(w, layoutName, args.Add("isLogin", IsLogin(w, r)))
+}
+
+func (a *ViewArgs) Add(key string, value interface{}) *ViewArgs {
+	(*a)[key] = value
+	return a
 }
