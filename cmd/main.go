@@ -12,7 +12,8 @@ import (
 
 const (
 	pubPath             = "../public"
-	staticFilePath      = "/static/"
+	externalFilePath    = "/static/external/"
+	internalFilePath    = "/static/internal/"
 	viewFilePath        = pubPath + "/views/"
 	layoutFilePath      = pubPath + "/layouts/layout.html"
 	layoutName          = "layout"
@@ -32,7 +33,8 @@ func main() {
 	r.HandleFunc("/signin", handleSignIn)
 	r.HandleFunc("/signout", handleSignOut)
 	r.HandleFunc("/mypage", handleMypage)
-	r.PathPrefix("/static/").Handler(http.FileServer(http.Dir(pubPath)))
+	r.PathPrefix(externalFilePath).Handler(http.FileServer(http.Dir(pubPath)))
+	r.PathPrefix(internalFilePath).Handler(http.FileServer(http.Dir(pubPath)))
 	r.HandleFunc("/", handleHome)
 
 	// セッション管理起動
@@ -46,10 +48,7 @@ func main() {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	ExecuteTemplate(w, r, "home", ViewArgs{
-		"isLogin":        IsLogin(w, r),
-		csrf.TemplateTag: csrf.TemplateField(r),
-	})
+	http.Redirect(w, r, "/signin", http.StatusMovedPermanently)
 }
 
 // ユーザー登録
@@ -135,7 +134,7 @@ func handleSignOut(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	ExecuteTemplate(w, r, "home", ViewArgs{"isLogin": false})
+	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
 
 // マイページ
@@ -184,7 +183,7 @@ func handleMypage(w http.ResponseWriter, r *http.Request) {
 
 // TODO
 func ErrorPage(w http.ResponseWriter, r *http.Request, message string) {
-	ExecuteTemplate(w, r, "home", ViewArgs{"isLogin": IsLogin(w, r), "message": message})
+	ExecuteTemplate(w, r, "/", ViewArgs{"message": message})
 }
 
 func IsLogin(w http.ResponseWriter, r *http.Request) bool {
@@ -197,11 +196,17 @@ func IsLogin(w http.ResponseWriter, r *http.Request) bool {
 
 func ExecuteTemplate(w http.ResponseWriter, r *http.Request, viewName string, args ViewArgs) {
 	t, _ := template.ParseFiles(layoutFilePath, viewFilePath+viewName+".html")
-	t.ExecuteTemplate(w, layoutName, args)
+	t.ExecuteTemplate(w, layoutName, args.Add("isLogin", IsLogin(w, r)))
 }
 
 func ExecuteTemplateWithFunc(w http.ResponseWriter, r *http.Request, viewName string, args ViewArgs, funcMap template.FuncMap) {
-	t := template.New(viewName + ".html").Funcs(funcMap)
-	t, _ = t.ParseFiles(layoutFilePath, viewFilePath+viewName+".html")
-	t.ExecuteTemplate(w, layoutName, args)
+	t, _ := template.New(viewName+".html").
+		Funcs(template.FuncMap{"TimeToSimple": gPresenter.TimeToSimple}).
+		ParseFiles(layoutFilePath, viewFilePath+viewName+".html")
+	t.ExecuteTemplate(w, layoutName, args.Add("isLogin", IsLogin(w, r)))
+}
+
+func (a *ViewArgs) Add(key string, value interface{}) *ViewArgs {
+	(*a)[key] = value
+	return a
 }
