@@ -31,6 +31,7 @@ func NewMypageGetModel(name, email string, zos Zos, base *ResponseBase) *MypageG
 }
 
 func (m *MypageGetModel) Sort() {
+	sort.SliceStable(m.Zos.Zos, func(i, j int) bool { return m.Zos.Zos[i].Id > m.Zos.Zos[j].Id })
 	sort.SliceStable(m.Zos.Zos, func(i, j int) bool { return m.Zos.Zos[i].AchievementDate.Unix() > m.Zos.Zos[j].AchievementDate.Unix() })
 }
 

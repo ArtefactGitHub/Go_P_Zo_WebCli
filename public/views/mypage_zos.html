@@ -2,7 +2,7 @@
 
 <row>
     <div class=" flex-column justify-content-center ">
-        <div class=" card mypage-zos-card">
+        <div class=" card mypage-zos-card overflow-auto">
             <div class="card-title mypage-zos-card-title">▼Zo一覧</div>
 
             {{ range .model.Zos.Zos }}
@@ -20,20 +20,23 @@
                 </div>
             </div>
             {{ end }}
-
         </div>
-        <div class=" card mypage-zos-card">
+
+        <div class="card mypage-zo-create-card">
             <div class="card-title mypage-zos-card-title">▼作成</div>
             <form action="" method="post">
-                <div>
-                    <label for="achievementdate">達成日</label>
+                <div class="mypage-zo-create-card-row">
+                    <label for="achievementdate" class="mypage-zo-create-card-label">達成日</label>
                     <input type="date" name="achievementdate" id="achievementdate" required>
-                    <label for="exp">獲得経験値</label>
-                    <input type="number" name="exp" id="exp" required>
-                    <label for="categoryId">カテゴリーID</label>
+                    <label for="exp" class="mypage-zo-create-card-label">獲得経験値</label>
+                    <input type="number" name="exp" id="exp" required placeholder=" 1000でレベルアップ">
+                    <label for="categoryId" class="mypage-zo-create-card-label">カテゴリー</label>
                     <input type="number" name="categoryId" id="categoryId" required>
-                    <label for="content">内容</label>
-                    <input type="text" name="content" id="content" required placeholder="〜したぞ！　〜出来たぞ！">
+                </div>
+                <div class="mypage-zo-create-card-row">
+                    <label for="message" class="mypage-zo-create-card-label">内容</label>
+                    <input type="text" name="message" id="message" class="mypage-zo-create-card-element-content"
+                        required placeholder=" 〜した 〜出来た（３０文字制限）">ゾ！
                 </div>
                 <div>
                     {{.csrfField}}

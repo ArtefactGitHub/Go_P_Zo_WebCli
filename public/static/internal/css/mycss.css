@@ -33,6 +33,7 @@ body {
 .mypage-zos-card{
   padding: 15px;
   margin: 30px 0;
+  height: 800px;
 }
 
 .mypage-zos-card-title{
@@ -42,13 +43,30 @@ body {
 }
 
 .mypage-zo-card{
-  /* padding: 15px; */
   margin: 5px 0;
 }
+
 .mypage-zo-card-title{
   background-color: aqua;
   
 }
 .mypage-zo-card-body{
   padding: 15px;
+}
+
+.mypage-zo-create-card{
+  padding: 15px;
+  margin: 30px 0;
+}
+
+.mypage-zo-create-card-row{
+  margin: 10px 0;
+}
+.mypage-zo-create-card-label{
+  margin-left: 10px;
+}
+
+.mypage-zo-create-card-element-content{
+  width: 550px;
+  text-align: right;
 }

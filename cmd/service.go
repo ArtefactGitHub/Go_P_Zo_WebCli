@@ -43,7 +43,7 @@ func (s *service) GetMypage(userToken *UserToken) (*MypageGetModel, error) {
 }
 
 func (s *service) PostNewZo(userToken *UserToken, values url.Values) (*MypageGetModel, error) {
-	rz, err := convertRequestZo(values.Get("achievementdate"), values.Get("exp"), values.Get("categoryId"), values.Get("content"))
+	rz, err := convertRequestZo(values.Get("achievementdate"), values.Get("exp"), values.Get("categoryId"), values.Get("message"))
 	if err != nil {
 		return nil, err
 	}
