@@ -7,9 +7,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="/static/external/css/bootstrap.min.css">
-    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.3.1/css/all.css"
-        integrity="sha384-mzrmE5qonljUremFsqc01SB46JvROS7bZs3IO2EmfFsd15uHvIt+Y8vEf7N7fWAU" crossorigin="anonymous">
-
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
     <link rel="stylesheet" href="/static/internal/css/mycss.css">
     <title>{{.title}}</title>
 </head>
@@ -27,7 +25,8 @@
 
             <div class="navbar-nav">
                 {{ if .isLogin }}
-                <a class="nav-link" href="/mypage">マイページ</a>
+                <a class="nav-link far fa-user fa-lg " href="/mypage/user"></a>
+                <a class="nav-link fab fa-brands fa-angellist fa-lg " href="/mypage/zos"></a>
 
                 <form class="form-inline" action="/signout" method="POST">
                     {{.csrfField}}
@@ -48,7 +47,7 @@
     </div>
 </body>
 
-<script src="/static/js/bootstrap.min.js"></script>
+<script src="/static/external/js/bootstrap.min.js"></script>
 
 </html>
 {{ end }}

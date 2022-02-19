@@ -25,3 +25,30 @@ body {
   margin-top: 10rem;
   height: 26rem;
 }
+
+.mypage-user-card{
+  margin-top: 10rem;
+}
+
+.mypage-zos-card{
+  padding: 15px;
+  margin: 30px 0;
+}
+
+.mypage-zos-card-title{
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 1px 1px 1px #ccc;
+}
+
+.mypage-zo-card{
+  /* padding: 15px; */
+  margin: 5px 0;
+}
+.mypage-zo-card-title{
+  background-color: aqua;
+  
+}
+.mypage-zo-card-body{
+  padding: 15px;
+}

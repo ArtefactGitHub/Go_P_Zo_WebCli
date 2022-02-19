@@ -190,7 +190,7 @@ func handleMypageZos(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		ExecuteTemplateWithFunc(w, r, "mypage", ViewArgs{
+		ExecuteTemplateWithFunc(w, r, "mypage_zos", ViewArgs{
 			"message":        message,
 			"model":          res,
 			csrf.TemplateTag: csrf.TemplateField(r),
