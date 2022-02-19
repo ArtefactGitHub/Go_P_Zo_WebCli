@@ -1,0 +1,16 @@
+{{ define "content" }}
+
+<row>
+    <div class="d-flex justify-content-center ">
+        <div class="col-lg-6 card mypage-user-card">
+            <div class="card-body ">
+                <h5 class="card-title">▼ユーザー情報</h5>
+
+                <p>ユーザー名: {{.model.Name}}</p>
+                <p>Email: {{.model.Email}}</p>
+            </div>
+        </div>
+    </div>
+</row>
+
+{{ end }}

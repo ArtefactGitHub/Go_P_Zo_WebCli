@@ -12,11 +12,11 @@ const (
 	sessionLifetimeDate = 1
 )
 const (
-	TopPath       = "/"
-	SignUpPath    = "/signup"
-	SignInPath    = "/signin"
-	SignOutPath   = "/signout"
-	MyPageTopPath = "/mypage"
-	MyPageZosPath = "/mypage/zos"
-	MyPageUser    = "/mypage/user"
+	TopPath        = "/"
+	SignUpPath     = "/signup"
+	SignInPath     = "/signin"
+	SignOutPath    = "/signout"
+	MyPageTopPath  = "/mypage"
+	MyPageZosPath  = "/mypage/zos"
+	MyPageUserPath = "/mypage/user"
 )

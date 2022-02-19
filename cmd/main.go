@@ -21,6 +21,7 @@ func main() {
 	r.HandleFunc(SignInPath, handleSignIn)
 	r.HandleFunc(SignOutPath, handleSignOut)
 	r.HandleFunc(MyPageZosPath, handleMypageZos)
+	r.HandleFunc(MyPageUserPath, handleMypageUser)
 	r.PathPrefix(externalFilePath).Handler(http.FileServer(http.Dir(pubPath)))
 	r.PathPrefix(internalFilePath).Handler(http.FileServer(http.Dir(pubPath)))
 	r.HandleFunc(TopPath, handleHome)
@@ -123,6 +124,42 @@ func handleSignOut(w http.ResponseWriter, r *http.Request) {
 	}
 
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
+}
+
+// ユーザー情報
+func handleMypageUser(w http.ResponseWriter, r *http.Request) {
+	s := NewService()
+
+	// セッションが存在しない
+	session, err := Sm.GetSession(w, r)
+	if err != nil {
+		http.Redirect(w, r, SignInPath, http.StatusMovedPermanently)
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		res, err := s.GetMypageUser(&session.UserToken)
+		log.Printf("res: %v, err: %v", res, err)
+
+		message := ""
+		if err != nil || res.StatusCode != http.StatusOK {
+			message = "ユーザー情報が取得できません。再度ログインをお願いします。"
+			if err != nil {
+				message += err.Error()
+			} else if res.Error != nil {
+				message += res.Error.Message
+			}
+
+			ExecuteTemplate(w, r, "signin", ViewArgs{"message": message, csrf.TemplateTag: csrf.TemplateField(r)})
+			return
+		}
+
+		ExecuteTemplate(w, r, "mypage_user", ViewArgs{
+			"message":        message,
+			"model":          res,
+			csrf.TemplateTag: csrf.TemplateField(r),
+		})
+	}
 }
 
 // マイページ

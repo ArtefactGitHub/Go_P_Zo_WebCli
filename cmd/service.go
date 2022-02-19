@@ -15,6 +15,18 @@ func NewService() *service {
 	return &service{}
 }
 
+// ユーザー情報
+func (s *service) GetMypageUser(userToken *UserToken) (*MypageUserGetModel, error) {
+	res, err := RequestGetUser(userToken)
+	if err != nil || res.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	result := NewMypageUserGetModel(res.FamilyName+res.GivenName, res.Email, res.ResponseBase)
+	return result, err
+}
+
+// Zo
 func (s *service) GetMypage(userToken *UserToken) (*MypageGetModel, error) {
 	resUser, err := RequestGetUser(userToken)
 	if err != nil || resUser.StatusCode != http.StatusOK {
