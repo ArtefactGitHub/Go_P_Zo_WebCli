@@ -159,16 +159,35 @@ func (d *GetAllZoResponseData) SetBaseData(statusCode int, err *myError) {
 }
 
 type Category struct {
-	Id         int    `json:"id"`
-	Name       string `json:"name"`
-	ColorId    int    `json:"color_id"`
-	CreateType int    `json:"create_type"`
-	UserId     int    `json:"user_id"`
+	Id      int    `json:"id"`
+	Number  int    `json:"number"`
+	Name    string `json:"name"`
+	ColorId int    `json:"color_id"`
+	UserId  int    `json:"user_id"`
+}
+
+var defaultCategories []Category = []Category{
+	{Name: "学習", Number: 99, ColorId: 0},
+	{Name: "人生", Number: 98, ColorId: 0},
+	{Name: "生活", Number: 97, ColorId: 0},
+}
+
+type Categories struct {
+	Categories []Category `json:"categories"`
+}
+
+func (m *Categories) GetName(id int) string {
+	for _, v := range m.Categories {
+		if id == v.Id {
+			return v.Name
+		}
+	}
+	return ""
 }
 
 type GetAllCategoryResponseData struct {
 	*ResponseBase
-	Categories []Category
+	Categories
 }
 
 func (d *GetAllCategoryResponseData) GetBaseData() *ResponseBase {

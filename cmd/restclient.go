@@ -64,6 +64,13 @@ func RequestGetAllCategory(p *UserToken) (*GetAllCategoryResponseData, error) {
 	return resData, err
 }
 
+// category 作成
+func RequestPostUserCategory(p *UserToken, r *requestUserCategory) (*PostUserCategoryResponseData, error) {
+	resData := &PostUserCategoryResponseData{}
+	err := Post(fmt.Sprintf("users/%d/categories", p.UserId), nil, r, resData, p)
+	return resData, err
+}
+
 // GET処理
 func Get(api string, reqHeader map[string]string, reqBody interface{}, resData IResponse, p *UserToken) error {
 	return request(api, http.MethodGet, nil, nil, resData, p)

@@ -72,3 +72,36 @@ func (d *PostZoResponseData) GetBaseData() *ResponseBase {
 func (d *PostZoResponseData) SetBaseData(statusCode int, err *myError) {
 	d.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
 }
+
+// UserCategory
+type requestUserCategory struct {
+	Name    string `json:"name"`
+	ColorId int    `json:"color_id"`
+	UserId  int    `json:"user_id"`
+}
+
+func NewRequestCategory(name string, colorId, userId int) *requestUserCategory {
+	return &requestUserCategory{
+		Name: name, ColorId: colorId, UserId: userId,
+	}
+}
+
+type responseCategory struct {
+	Id      int    `json:"id"`
+	Number  int    `json:"number"`
+	Name    string `json:"name"`
+	ColorId int    `json:"color_id"`
+	UserId  int    `json:"user_id"`
+}
+
+type PostUserCategoryResponseData struct {
+	*ResponseBase
+	*responseCategory
+}
+
+func (d *PostUserCategoryResponseData) GetBaseData() *ResponseBase {
+	return d.ResponseBase
+}
+func (d *PostUserCategoryResponseData) SetBaseData(statusCode int, err *myError) {
+	d.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
+}
