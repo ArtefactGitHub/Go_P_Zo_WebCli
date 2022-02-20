@@ -143,3 +143,23 @@ func (d *GetAllZoResponseData) GetBaseData() *ResponseBase {
 func (d *GetAllZoResponseData) SetBaseData(statusCode int, err *myError) {
 	d.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
 }
+
+type Category struct {
+	Id         int    `json:"id"`
+	Name       string `json:"name"`
+	ColorId    int    `json:"color_id"`
+	CreateType int    `json:"create_type"`
+	UserId     int    `json:"user_id"`
+}
+
+type GetAllCategoryResponseData struct {
+	*ResponseBase
+	Categories []Category
+}
+
+func (d *GetAllCategoryResponseData) GetBaseData() *ResponseBase {
+	return d.ResponseBase
+}
+func (d *GetAllCategoryResponseData) SetBaseData(statusCode int, err *myError) {
+	d.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
+}

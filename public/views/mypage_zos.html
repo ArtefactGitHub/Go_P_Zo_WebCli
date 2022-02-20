@@ -31,7 +31,11 @@
                     <label for="exp" class="mypage-zo-create-card-label">獲得経験値</label>
                     <input type="number" name="exp" id="exp" required placeholder=" 1000でレベルアップ">
                     <label for="categoryId" class="mypage-zo-create-card-label">カテゴリー</label>
-                    <input type="number" name="categoryId" id="categoryId" required>
+                    <select name="categoryId">
+                        {{ range .model.Categories }}
+                        <option value="{{ .Id }}">{{ .Name }}</option>
+                        {{ end }}
+                    </select>
                 </div>
                 <div class="mypage-zo-create-card-row">
                     <label for="message" class="mypage-zo-create-card-label">内容</label>

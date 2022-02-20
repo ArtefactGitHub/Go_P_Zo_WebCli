@@ -57,6 +57,13 @@ func RequestPostZo(p *UserToken, rz *requestZo) (*PostZoResponseData, error) {
 	return resData, err
 }
 
+// category情報取得
+func RequestGetAllCategory(p *UserToken) (*GetAllCategoryResponseData, error) {
+	resData := &GetAllCategoryResponseData{}
+	err := Get(fmt.Sprintf("users/%d/categories", p.UserId), nil, nil, resData, p)
+	return resData, err
+}
+
 // GET処理
 func Get(api string, reqHeader map[string]string, reqBody interface{}, resData IResponse, p *UserToken) error {
 	return request(api, http.MethodGet, nil, nil, resData, p)

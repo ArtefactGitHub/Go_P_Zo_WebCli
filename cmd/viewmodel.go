@@ -19,13 +19,14 @@ func NewMypageUserGetModel(name, email string, base *ResponseBase) *MypageUserGe
 
 type MypageGetModel struct {
 	*ResponseBase
-	Name  string
-	Email string
-	Zos   Zos
+	Name       string
+	Email      string
+	Zos        Zos
+	Categories []Category
 }
 
-func NewMypageGetModel(name, email string, zos Zos, base *ResponseBase) *MypageGetModel {
-	m := &MypageGetModel{Name: name, Email: email, Zos: zos, ResponseBase: base}
+func NewMypageGetModel(name, email string, zos Zos, categories []Category, base *ResponseBase) *MypageGetModel {
+	m := &MypageGetModel{Name: name, Email: email, Zos: zos, Categories: categories, ResponseBase: base}
 	m.Sort()
 	return m
 }

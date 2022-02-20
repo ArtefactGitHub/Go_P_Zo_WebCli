@@ -38,7 +38,12 @@ func (s *service) GetMypage(userToken *UserToken) (*MypageGetModel, error) {
 		return nil, err
 	}
 
-	result := NewMypageGetModel(resUser.FamilyName+resUser.GivenName, resUser.Email, *resZo.Zos, resZo.ResponseBase)
+	resCategory, err := RequestGetAllCategory(userToken)
+	if err != nil || resZo.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	result := NewMypageGetModel(resUser.FamilyName+resUser.GivenName, resUser.Email, *resZo.Zos, resCategory.Categories, resZo.ResponseBase)
 	return result, err
 }
 
