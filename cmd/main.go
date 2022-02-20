@@ -10,18 +10,6 @@ import (
 	"github.com/gorilla/mux"
 )
 
-const (
-	pubPath             = "../public"
-	externalFilePath    = "/static/external/"
-	internalFilePath    = "/static/internal/"
-	viewFilePath        = pubPath + "/views/"
-	layoutFilePath      = pubPath + "/layouts/layout.html"
-	layoutName          = "layout"
-	port                = "8080"
-	cookie_key_session  = "go_p_zo_webcli_cookie_key_session"
-	sessionLifetimeDate = 1
-)
-
 type ViewArgs map[string]interface{}
 
 func main() {
@@ -29,13 +17,14 @@ func main() {
 	authKey := Cfg.CsrfAuthKey
 
 	r := mux.NewRouter()
-	r.HandleFunc("/signup", handleSignUp)
-	r.HandleFunc("/signin", handleSignIn)
-	r.HandleFunc("/signout", handleSignOut)
-	r.HandleFunc("/mypage", handleMypage)
+	r.HandleFunc(SignUpPath, handleSignUp)
+	r.HandleFunc(SignInPath, handleSignIn)
+	r.HandleFunc(SignOutPath, handleSignOut)
+	r.HandleFunc(MyPageZosPath, handleMypageZos)
+	r.HandleFunc(MyPageUserPath, handleMypageUser)
 	r.PathPrefix(externalFilePath).Handler(http.FileServer(http.Dir(pubPath)))
 	r.PathPrefix(internalFilePath).Handler(http.FileServer(http.Dir(pubPath)))
-	r.HandleFunc("/", handleHome)
+	r.HandleFunc(TopPath, handleHome)
 
 	// セッション管理起動
 	ctx, cancel := context.WithCancel(context.Background())
@@ -48,7 +37,7 @@ func main() {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	http.Redirect(w, r, "/signin", http.StatusMovedPermanently)
+	http.Redirect(w, r, SignInPath, http.StatusMovedPermanently)
 }
 
 // ユーザー登録
@@ -58,7 +47,7 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 		if _, err := Sm.GetSession(w, r); err != nil {
 			ExecuteTemplate(w, r, "signup", ViewArgs{csrf.TemplateTag: csrf.TemplateField(r)})
 		} else {
-			http.Redirect(w, r, "/mypage", http.StatusMovedPermanently)
+			http.Redirect(w, r, MyPageZosPath, http.StatusMovedPermanently)
 			return
 		}
 	} else if r.Method == http.MethodPost {
@@ -83,7 +72,7 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		http.Redirect(w, r, "/mypage", http.StatusMovedPermanently)
+		http.Redirect(w, r, MyPageZosPath, http.StatusMovedPermanently)
 	}
 }
 
@@ -94,7 +83,7 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 		if _, err := Sm.GetSession(w, r); err != nil {
 			ExecuteTemplate(w, r, "signin", ViewArgs{csrf.TemplateTag: csrf.TemplateField(r)})
 		} else {
-			http.Redirect(w, r, "/mypage", http.StatusMovedPermanently)
+			http.Redirect(w, r, MyPageZosPath, http.StatusMovedPermanently)
 			return
 		}
 	} else if r.Method == http.MethodPost {
@@ -121,7 +110,7 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 		log.Printf("sessionData: %v", sessionData)
 		Sm.StartSession(w, r, sessionData)
 
-		http.Redirect(w, r, "/mypage", http.StatusMovedPermanently)
+		http.Redirect(w, r, MyPageZosPath, http.StatusMovedPermanently)
 	}
 }
 
@@ -137,20 +126,56 @@ func handleSignOut(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, "/", http.StatusMovedPermanently)
 }
 
-// マイページ
-func handleMypage(w http.ResponseWriter, r *http.Request) {
+// ユーザー情報
+func handleMypageUser(w http.ResponseWriter, r *http.Request) {
 	s := NewService()
 
 	// セッションが存在しない
 	session, err := Sm.GetSession(w, r)
 	if err != nil {
-		http.Redirect(w, r, "/signin", http.StatusMovedPermanently)
+		http.Redirect(w, r, SignInPath, http.StatusMovedPermanently)
+		return
+	}
+
+	if r.Method == http.MethodGet {
+		res, err := s.GetMypageUser(&session.UserToken)
+		log.Printf("res: %v, err: %v", res, err)
+
+		message := ""
+		if err != nil || res.StatusCode != http.StatusOK {
+			message = "ユーザー情報が取得できません。再度ログインをお願いします。"
+			if err != nil {
+				message += err.Error()
+			} else if res.Error != nil {
+				message += res.Error.Message
+			}
+
+			ExecuteTemplate(w, r, "signin", ViewArgs{"message": message, csrf.TemplateTag: csrf.TemplateField(r)})
+			return
+		}
+
+		ExecuteTemplate(w, r, "mypage_user", ViewArgs{
+			"message":        message,
+			"model":          res,
+			csrf.TemplateTag: csrf.TemplateField(r),
+		})
+	}
+}
+
+// マイページ
+func handleMypageZos(w http.ResponseWriter, r *http.Request) {
+	s := NewService()
+
+	// セッションが存在しない
+	session, err := Sm.GetSession(w, r)
+	if err != nil {
+		http.Redirect(w, r, SignInPath, http.StatusMovedPermanently)
 		return
 	}
 
 	if r.Method == http.MethodGet {
 		res, err := s.GetMypage(&session.UserToken)
-		log.Printf("res: %v, err: %v", res, err)
+		log.Printf("[Get]handleMypageZos res: %v, err: %v", res, err)
 
 		message := ""
 		if err != nil || res.StatusCode != http.StatusOK {
@@ -165,7 +190,7 @@ func handleMypage(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		ExecuteTemplateWithFunc(w, r, "mypage", ViewArgs{
+		ExecuteTemplateWithFunc(w, r, "mypage_zos", ViewArgs{
 			"message":        message,
 			"model":          res,
 			csrf.TemplateTag: csrf.TemplateField(r),
@@ -177,7 +202,7 @@ func handleMypage(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		http.Redirect(w, r, "/mypage", http.StatusMovedPermanently)
+		http.Redirect(w, r, MyPageZosPath, http.StatusMovedPermanently)
 	}
 }
 

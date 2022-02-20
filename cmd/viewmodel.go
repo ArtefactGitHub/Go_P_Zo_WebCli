@@ -1,10 +1,21 @@
 package main
 
 import (
+	"sort"
 	"time"
 )
 
 const TimeLayout = "2006-01-02"
+
+type MypageUserGetModel struct {
+	*ResponseBase
+	Name  string
+	Email string
+}
+
+func NewMypageUserGetModel(name, email string, base *ResponseBase) *MypageUserGetModel {
+	return &MypageUserGetModel{Name: name, Email: email, ResponseBase: base}
+}
 
 type MypageGetModel struct {
 	*ResponseBase
@@ -14,7 +25,14 @@ type MypageGetModel struct {
 }
 
 func NewMypageGetModel(name, email string, zos Zos, base *ResponseBase) *MypageGetModel {
-	return &MypageGetModel{Name: name, Email: email, Zos: zos, ResponseBase: base}
+	m := &MypageGetModel{Name: name, Email: email, Zos: zos, ResponseBase: base}
+	m.Sort()
+	return m
+}
+
+func (m *MypageGetModel) Sort() {
+	sort.SliceStable(m.Zos.Zos, func(i, j int) bool { return m.Zos.Zos[i].Id > m.Zos.Zos[j].Id })
+	sort.SliceStable(m.Zos.Zos, func(i, j int) bool { return m.Zos.Zos[i].AchievementDate.Unix() > m.Zos.Zos[j].AchievementDate.Unix() })
 }
 
 type requestZo struct {
