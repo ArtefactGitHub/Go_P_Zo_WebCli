@@ -184,8 +184,9 @@ func doRequest(req *http.Request, respBody interface{}) (int, error) {
 		return 0, err
 	}
 
-	if err := json.Unmarshal(body, respBody); err != nil {
-		return 0, err
+	err = json.Unmarshal(body, respBody)
+	if err != nil {
+		return 0, fmt.Errorf("レスポンス情報が生成できません。 StatusCode: %d, Status: %s", res.StatusCode, res.Status)
 	}
 
 	return res.StatusCode, nil
