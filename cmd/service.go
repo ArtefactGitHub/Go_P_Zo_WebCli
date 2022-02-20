@@ -27,7 +27,7 @@ func (s *service) GetMypageUser(userToken *UserToken) (*MypageUserGetModel, erro
 }
 
 // Zo
-func (s *service) GetMypage(userToken *UserToken) (*MypageGetModel, error) {
+func (s *service) GetMypageZos(userToken *UserToken) (*MypageZosGetModel, error) {
 	resUser, err := RequestGetUser(userToken)
 	if err != nil || resUser.StatusCode != http.StatusOK {
 		return nil, err
@@ -43,7 +43,7 @@ func (s *service) GetMypage(userToken *UserToken) (*MypageGetModel, error) {
 		return nil, err
 	}
 
-	result := NewMypageGetModel(resUser.FamilyName+resUser.GivenName, resUser.Email, *resZo.Zos, resCategory.Categories, resZo.ResponseBase)
+	result := NewMypageZosGetModel(resUser.FamilyName+resUser.GivenName, resUser.Email, *resZo.Zos, resCategory.Categories, resZo.ResponseBase)
 	return result, err
 }
 

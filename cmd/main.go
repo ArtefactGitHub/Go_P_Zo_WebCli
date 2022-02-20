@@ -174,7 +174,7 @@ func handleMypageZos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		res, err := s.GetMypage(&session.UserToken)
+		res, err := s.GetMypageZos(&session.UserToken)
 		log.Printf("[Get]handleMypageZos res: %v, err: %v", res, err)
 
 		message := ""

@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"sort"
 	"time"
 )
 
@@ -123,14 +124,26 @@ type Zo struct {
 	Id                 int       `json:"id"`
 	AchievementDate    time.Time `json:"achievementdate"`
 	Exp                int       `json:"exp"`
-	CategoryId         int       `json:"categoryid"`
+	CategoryId         int       `json:"category_id"`
 	Message            string    `json:"message"`
 	UserId             int       `json:"user_id"`
 	AchievementDateStr string
+	CategoryName       string
 }
 
 type Zos struct {
 	Zos []*Zo `json:"zos"`
+}
+
+func (z *Zos) Sort() {
+	sort.SliceStable(z.Zos, func(i, j int) bool { return z.Zos[i].Id > z.Zos[j].Id })
+	sort.SliceStable(z.Zos, func(i, j int) bool { return z.Zos[i].AchievementDate.Unix() > z.Zos[j].AchievementDate.Unix() })
+}
+
+func (z *Zos) SetCategoryName(categories Categories) {
+	for _, v := range z.Zos {
+		v.CategoryName = categories.GetName(v.CategoryId)
+	}
 }
 
 type GetAllZoResponseData struct {
