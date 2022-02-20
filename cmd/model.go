@@ -59,7 +59,8 @@ type PostLoginRequestData struct {
 
 type PostUserResponseData struct {
 	*ResponseBase
-	User *User `json:"user"`
+	User      *User      `json:"user"`
+	UserToken *UserToken `json:"usertoken"`
 }
 
 func (tr *PostUserResponseData) GetBaseData() *ResponseBase {
