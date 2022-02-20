@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"sort"
 	"time"
 )
 
@@ -59,7 +60,8 @@ type PostLoginRequestData struct {
 
 type PostUserResponseData struct {
 	*ResponseBase
-	User *User `json:"user"`
+	User      *User      `json:"user"`
+	UserToken *UserToken `json:"usertoken"`
 }
 
 func (tr *PostUserResponseData) GetBaseData() *ResponseBase {
@@ -122,14 +124,26 @@ type Zo struct {
 	Id                 int       `json:"id"`
 	AchievementDate    time.Time `json:"achievementdate"`
 	Exp                int       `json:"exp"`
-	CategoryId         int       `json:"categoryid"`
+	CategoryId         int       `json:"category_id"`
 	Message            string    `json:"message"`
 	UserId             int       `json:"user_id"`
 	AchievementDateStr string
+	CategoryName       string
 }
 
 type Zos struct {
 	Zos []*Zo `json:"zos"`
+}
+
+func (z *Zos) Sort() {
+	sort.SliceStable(z.Zos, func(i, j int) bool { return z.Zos[i].Id > z.Zos[j].Id })
+	sort.SliceStable(z.Zos, func(i, j int) bool { return z.Zos[i].AchievementDate.Unix() > z.Zos[j].AchievementDate.Unix() })
+}
+
+func (z *Zos) SetCategoryName(categories Categories) {
+	for _, v := range z.Zos {
+		v.CategoryName = categories.GetName(v.CategoryId)
+	}
 }
 
 type GetAllZoResponseData struct {
@@ -141,5 +155,44 @@ func (d *GetAllZoResponseData) GetBaseData() *ResponseBase {
 	return d.ResponseBase
 }
 func (d *GetAllZoResponseData) SetBaseData(statusCode int, err *myError) {
+	d.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
+}
+
+type Category struct {
+	Id      int    `json:"id"`
+	Number  int    `json:"number"`
+	Name    string `json:"name"`
+	ColorId int    `json:"color_id"`
+	UserId  int    `json:"user_id"`
+}
+
+var defaultCategories []Category = []Category{
+	{Name: "学習", Number: 99, ColorId: 0},
+	{Name: "人生", Number: 98, ColorId: 0},
+	{Name: "生活", Number: 97, ColorId: 0},
+}
+
+type Categories struct {
+	Categories []Category `json:"categories"`
+}
+
+func (m *Categories) GetName(id int) string {
+	for _, v := range m.Categories {
+		if id == v.Id {
+			return v.Name
+		}
+	}
+	return ""
+}
+
+type GetAllCategoryResponseData struct {
+	*ResponseBase
+	Categories
+}
+
+func (d *GetAllCategoryResponseData) GetBaseData() *ResponseBase {
+	return d.ResponseBase
+}
+func (d *GetAllCategoryResponseData) SetBaseData(statusCode int, err *myError) {
 	d.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
 }

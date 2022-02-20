@@ -57,6 +57,20 @@ func RequestPostZo(p *UserToken, rz *requestZo) (*PostZoResponseData, error) {
 	return resData, err
 }
 
+// category情報取得
+func RequestGetAllCategory(p *UserToken) (*GetAllCategoryResponseData, error) {
+	resData := &GetAllCategoryResponseData{}
+	err := Get(fmt.Sprintf("users/%d/categories", p.UserId), nil, nil, resData, p)
+	return resData, err
+}
+
+// category 作成
+func RequestPostUserCategory(p *UserToken, r *requestUserCategory) (*PostUserCategoryResponseData, error) {
+	resData := &PostUserCategoryResponseData{}
+	err := Post(fmt.Sprintf("users/%d/categories", p.UserId), nil, r, resData, p)
+	return resData, err
+}
+
 // GET処理
 func Get(api string, reqHeader map[string]string, reqBody interface{}, resData IResponse, p *UserToken) error {
 	return request(api, http.MethodGet, nil, nil, resData, p)
@@ -177,8 +191,9 @@ func doRequest(req *http.Request, respBody interface{}) (int, error) {
 		return 0, err
 	}
 
-	if err := json.Unmarshal(body, respBody); err != nil {
-		return 0, err
+	err = json.Unmarshal(body, respBody)
+	if err != nil {
+		return 0, fmt.Errorf("レスポンス情報が生成できません。 StatusCode: %d, Status: %s", res.StatusCode, res.Status)
 	}
 
 	return res.StatusCode, nil

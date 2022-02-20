@@ -27,7 +27,7 @@ func (s *service) GetMypageUser(userToken *UserToken) (*MypageUserGetModel, erro
 }
 
 // Zo
-func (s *service) GetMypage(userToken *UserToken) (*MypageGetModel, error) {
+func (s *service) GetMypageZos(userToken *UserToken) (*MypageZosGetModel, error) {
 	resUser, err := RequestGetUser(userToken)
 	if err != nil || resUser.StatusCode != http.StatusOK {
 		return nil, err
@@ -38,11 +38,16 @@ func (s *service) GetMypage(userToken *UserToken) (*MypageGetModel, error) {
 		return nil, err
 	}
 
-	result := NewMypageGetModel(resUser.FamilyName+resUser.GivenName, resUser.Email, *resZo.Zos, resZo.ResponseBase)
+	resCategory, err := RequestGetAllCategory(userToken)
+	if err != nil || resZo.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	result := NewMypageZosGetModel(resUser.FamilyName+resUser.GivenName, resUser.Email, *resZo.Zos, resCategory.Categories, resZo.ResponseBase)
 	return result, err
 }
 
-func (s *service) PostNewZo(userToken *UserToken, values url.Values) (*MypageGetModel, error) {
+func (s *service) PostNewZo(userToken *UserToken, values url.Values) (*MypageZosGetModel, error) {
 	rz, err := convertRequestZo(values.Get("achievementdate"), values.Get("exp"), values.Get("categoryId"), values.Get("message"))
 	if err != nil {
 		return nil, err
@@ -56,14 +61,14 @@ func (s *service) PostNewZo(userToken *UserToken, values url.Values) (*MypageGet
 	return nil, nil
 }
 
-func convertRequestZo(_achievementDate string, _exp string, _categoryId string, message string,
+func convertRequestZo(achievementDateStr string, expStr string, categoryIdStr string, message string,
 ) (*requestZo, error) {
-	if achievementDate, err := time.Parse(TimeLayout, _achievementDate); err != nil {
-		return nil, fmt.Errorf("達成日が正しい値ではありません。achievementDate: %s", _achievementDate)
-	} else if exp, err := strconv.Atoi(_exp); err != nil {
-		return nil, fmt.Errorf("獲得経験値が正しい値ではありません。exp: %s", _exp)
-	} else if categoryId, err := strconv.Atoi(_categoryId); err != nil {
-		return nil, fmt.Errorf("カテゴリーIDが正しい値ではありません。categoryId: %s", _categoryId)
+	if achievementDate, err := time.Parse(TimeLayout, achievementDateStr); err != nil {
+		return nil, fmt.Errorf("達成日が正しい値ではありません。achievementDate: %s", achievementDateStr)
+	} else if exp, err := strconv.Atoi(expStr); err != nil {
+		return nil, fmt.Errorf("獲得経験値が正しい値ではありません。exp: %s", expStr)
+	} else if categoryId, err := strconv.Atoi(categoryIdStr); err != nil {
+		return nil, fmt.Errorf("カテゴリー番号が正しい値ではありません。categoryNumber: %s", categoryIdStr)
 	} else {
 		return NewRequestZo(
 			achievementDate,

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"sort"
 	"time"
 )
 
@@ -17,28 +16,26 @@ func NewMypageUserGetModel(name, email string, base *ResponseBase) *MypageUserGe
 	return &MypageUserGetModel{Name: name, Email: email, ResponseBase: base}
 }
 
-type MypageGetModel struct {
+type MypageZosGetModel struct {
 	*ResponseBase
-	Name  string
-	Email string
-	Zos   Zos
+	Name       string
+	Email      string
+	Zos        Zos
+	Categories Categories
+	TodayStr   string
 }
 
-func NewMypageGetModel(name, email string, zos Zos, base *ResponseBase) *MypageGetModel {
-	m := &MypageGetModel{Name: name, Email: email, Zos: zos, ResponseBase: base}
-	m.Sort()
+func NewMypageZosGetModel(name, email string, zos Zos, categories Categories, base *ResponseBase) *MypageZosGetModel {
+	m := &MypageZosGetModel{Name: name, Email: email, Zos: zos, Categories: categories, TodayStr: time.Now().Format("2006-01-02"), ResponseBase: base}
+	m.Zos.Sort()
+	m.Zos.SetCategoryName(categories)
 	return m
-}
-
-func (m *MypageGetModel) Sort() {
-	sort.SliceStable(m.Zos.Zos, func(i, j int) bool { return m.Zos.Zos[i].Id > m.Zos.Zos[j].Id })
-	sort.SliceStable(m.Zos.Zos, func(i, j int) bool { return m.Zos.Zos[i].AchievementDate.Unix() > m.Zos.Zos[j].AchievementDate.Unix() })
 }
 
 type requestZo struct {
 	AchievementDate time.Time `json:"achievementdate"`
 	Exp             int       `json:"exp"`
-	CategoryId      int       `json:"categoryid"`
+	CategoryId      int       `json:"category_id"`
 	Message         string    `json:"message"`
 }
 
@@ -60,7 +57,7 @@ type responseZo struct {
 	Id              int       `json:"id"`
 	AchievementDate time.Time `json:"achievementdate"`
 	Exp             int       `json:"exp"`
-	CategoryId      int       `json:"categoryid"`
+	CategoryId      int       `json:"category_id"`
 	Message         string    `json:"message"`
 }
 
@@ -73,5 +70,38 @@ func (d *PostZoResponseData) GetBaseData() *ResponseBase {
 	return d.ResponseBase
 }
 func (d *PostZoResponseData) SetBaseData(statusCode int, err *myError) {
+	d.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
+}
+
+// UserCategory
+type requestUserCategory struct {
+	Name    string `json:"name"`
+	ColorId int    `json:"color_id"`
+	UserId  int    `json:"user_id"`
+}
+
+func NewRequestCategory(name string, colorId, userId int) *requestUserCategory {
+	return &requestUserCategory{
+		Name: name, ColorId: colorId, UserId: userId,
+	}
+}
+
+type responseCategory struct {
+	Id      int    `json:"id"`
+	Number  int    `json:"number"`
+	Name    string `json:"name"`
+	ColorId int    `json:"color_id"`
+	UserId  int    `json:"user_id"`
+}
+
+type PostUserCategoryResponseData struct {
+	*ResponseBase
+	*responseCategory
+}
+
+func (d *PostUserCategoryResponseData) GetBaseData() *ResponseBase {
+	return d.ResponseBase
+}
+func (d *PostUserCategoryResponseData) SetBaseData(statusCode int, err *myError) {
 	d.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
 }

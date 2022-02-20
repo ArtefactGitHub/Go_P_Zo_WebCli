@@ -70,9 +70,17 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 
 			ExecuteTemplate(w, r, "signup", ViewArgs{"message": message, csrf.TemplateTag: csrf.TemplateField(r)})
 			return
+		} else {
+			for _, v := range defaultCategories {
+				_, err := RequestPostUserCategory(res.UserToken, NewRequestCategory(v.Name, v.ColorId, res.User.Id))
+				if err != nil {
+					ExecuteTemplate(w, r, "signup", ViewArgs{"message": err.Error(), csrf.TemplateTag: csrf.TemplateField(r)})
+					return
+				}
+			}
 		}
 
-		http.Redirect(w, r, MyPageZosPath, http.StatusMovedPermanently)
+		http.Redirect(w, r, SignInPath, http.StatusMovedPermanently)
 	}
 }
 
@@ -174,7 +182,7 @@ func handleMypageZos(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if r.Method == http.MethodGet {
-		res, err := s.GetMypage(&session.UserToken)
+		res, err := s.GetMypageZos(&session.UserToken)
 		log.Printf("[Get]handleMypageZos res: %v, err: %v", res, err)
 
 		message := ""
@@ -208,7 +216,7 @@ func handleMypageZos(w http.ResponseWriter, r *http.Request) {
 
 // TODO
 func ErrorPage(w http.ResponseWriter, r *http.Request, message string) {
-	ExecuteTemplate(w, r, "/", ViewArgs{"message": message})
+	ExecuteTemplate(w, r, "home", ViewArgs{"message": message})
 }
 
 func IsLogin(w http.ResponseWriter, r *http.Request) bool {
