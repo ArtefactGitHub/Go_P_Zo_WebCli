@@ -72,7 +72,7 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		http.Redirect(w, r, MyPageZosPath, http.StatusMovedPermanently)
+		http.Redirect(w, r, SignInPath, http.StatusMovedPermanently)
 	}
 }
 
@@ -208,7 +208,7 @@ func handleMypageZos(w http.ResponseWriter, r *http.Request) {
 
 // TODO
 func ErrorPage(w http.ResponseWriter, r *http.Request, message string) {
-	ExecuteTemplate(w, r, "/", ViewArgs{"message": message})
+	ExecuteTemplate(w, r, "home", ViewArgs{"message": message})
 }
 
 func IsLogin(w http.ResponseWriter, r *http.Request) bool {
