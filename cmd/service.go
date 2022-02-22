@@ -47,18 +47,20 @@ func (s *service) GetMypageZos(userToken *UserToken) (*MypageZosGetModel, error)
 	return result, err
 }
 
-func (s *service) PostNewZo(userToken *UserToken, values url.Values) (*MypageZosGetModel, error) {
+func (s *service) PostNewZo(userToken *UserToken, values url.Values) (*MyPageZosPostModel, error) {
 	rz, err := validation(values)
 	if err != nil {
 		return nil, err
 	}
 
 	resZo, err := RequestPostZo(userToken, rz)
-	if err != nil || resZo.StatusCode != http.StatusOK {
+	if err != nil {
 		return nil, err
+	} else if resZo.ResponseBase.Error != nil {
+		return nil, resZo.ResponseBase.Error
 	}
 
-	return nil, nil
+	return resZo, nil
 }
 
 func validation(values url.Values) (*requestZo, error) {

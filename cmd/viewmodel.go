@@ -61,15 +61,15 @@ type responseZo struct {
 	Message         string    `json:"message"`
 }
 
-type PostZoResponseData struct {
+type MyPageZosPostModel struct {
 	*ResponseBase
 	*responseZo
 }
 
-func (d *PostZoResponseData) GetBaseData() *ResponseBase {
+func (d *MyPageZosPostModel) GetBaseData() *ResponseBase {
 	return d.ResponseBase
 }
-func (d *PostZoResponseData) SetBaseData(statusCode int, err *myError) {
+func (d *MyPageZosPostModel) SetBaseData(statusCode int, err *myError) {
 	d.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
 }
 
