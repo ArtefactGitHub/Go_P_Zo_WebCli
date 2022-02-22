@@ -48,7 +48,7 @@ func (s *service) GetMypageZos(userToken *UserToken) (*MypageZosGetModel, error)
 }
 
 func (s *service) PostNewZo(userToken *UserToken, values url.Values) (*MypageZosGetModel, error) {
-	rz, err := convertRequestZo(values.Get("achievementdate"), values.Get("exp"), values.Get("categoryId"), values.Get("message"))
+	rz, err := validation(values)
 	if err != nil {
 		return nil, err
 	}
@@ -61,20 +61,38 @@ func (s *service) PostNewZo(userToken *UserToken, values url.Values) (*MypageZos
 	return nil, nil
 }
 
-func convertRequestZo(achievementDateStr string, expStr string, categoryIdStr string, message string,
-) (*requestZo, error) {
-	if achievementDate, err := time.Parse(TimeLayout, achievementDateStr); err != nil {
-		return nil, fmt.Errorf("達成日が正しい値ではありません。achievementDate: %s", achievementDateStr)
-	} else if exp, err := strconv.Atoi(expStr); err != nil {
-		return nil, fmt.Errorf("獲得経験値が正しい値ではありません。exp: %s", expStr)
-	} else if categoryId, err := strconv.Atoi(categoryIdStr); err != nil {
-		return nil, fmt.Errorf("カテゴリー番号が正しい値ではありません。categoryNumber: %s", categoryIdStr)
-	} else {
-		return NewRequestZo(
-			achievementDate,
-			exp,
-			categoryId,
-			message,
-		), nil
+func validation(values url.Values) (*requestZo, error) {
+	achievementDateStr := values.Get("achievementdate")
+	achievementDate, err := time.Parse(TimeLayout, achievementDateStr)
+	if err != nil {
+		return nil, fmt.Errorf("達成日が適切な日付情報ではありません。achievementDate: %s", achievementDateStr)
+	} else if achievementDate.Unix() > time.Now().Unix() {
+		return nil, fmt.Errorf("達成日に未来が設定されています。achievementDate: %s", achievementDateStr)
 	}
+
+	expStr := values.Get("exp")
+	exp, err := strconv.Atoi(expStr)
+	if err != nil {
+		return nil, fmt.Errorf("獲得経験値が正しい値ではありません。exp: %s", expStr)
+	} else if exp < 0 || exp > 1000 {
+		return nil, fmt.Errorf("獲得経験値は0〜1000の範囲で指定してください。exp: %s", expStr)
+	}
+
+	categoryIdStr := values.Get("categoryId")
+	categoryId, err := strconv.Atoi(categoryIdStr)
+	if err != nil {
+		return nil, fmt.Errorf("カテゴリー番号が正しい値ではありません。categoryNumber: %s", categoryIdStr)
+	}
+
+	message := values.Get("message")
+	if len(message) > 30 {
+		return nil, fmt.Errorf("メッセージは30文字以内で指定してください。")
+	}
+
+	return NewRequestZo(
+		achievementDate,
+		exp,
+		categoryId,
+		message,
+	), nil
 }
