@@ -7,8 +7,13 @@ body {
 }
 
 .container{
-  height: 100%;
   align-content: center;
+}
+
+.copyright{
+  text-align: right;
+  font-size: 0.9rem;
+  padding: 0 2rem;
 }
 
 .signin{
