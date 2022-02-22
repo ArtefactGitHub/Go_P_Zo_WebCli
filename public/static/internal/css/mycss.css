@@ -64,14 +64,16 @@ body {
   margin: 30px 0;
 }
 
-.mypage-zo-create-card-row{
+.mypage-zo-create-card .card-row{
   margin: 10px 0;
 }
-.mypage-zo-create-card-label{
+.mypage-zo-create-card .card-label{
   margin-left: 10px;
 }
-
-.mypage-zo-create-card-element-content{
+.mypage-zo-create-card .card-message{
   width: 550px;
   text-align: right;
+}
+.mypage-zo-create-card .exp {
+  min-width: 180px;
 }

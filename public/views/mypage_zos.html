@@ -25,12 +25,13 @@
         <div class="card mypage-zo-create-card">
             <div class="card-title mypage-zos-card-title">▼作成</div>
             <form action="" method="post">
-                <div class="mypage-zo-create-card-row">
-                    <label for="achievementdate" class="mypage-zo-create-card-label">達成日</label>
+                <div class="card-row">
+                    <label for="achievementdate" class="card-label">達成日</label>
                     <input type="date" name="achievementdate" id="achievementdate" value="{{.model.TodayStr}}" required>
-                    <label for="exp" class="mypage-zo-create-card-label">獲得経験値</label>
-                    <input type="number" name="exp" id="exp" required placeholder=" 100でレベルアップ">
-                    <label for="categoryId" class="mypage-zo-create-card-label">カテゴリー</label>
+                    <label for="exp" class="card-label">獲得経験値</label>
+                    <input type="number" name="exp" id="exp" class="exp" required placeholder=" 100でレベルアップ" min="0"
+                        max="1000">
+                    <label for="categoryId" class="card-label">カテゴリー</label>
                     <select name="categoryId" required>
                         {{ range .model.Categories.Categories }}
                         <option value="{{ .Id }}">{{ .Name }}</option>
@@ -38,10 +39,10 @@
                     </select>
 
                 </div>
-                <div class="mypage-zo-create-card-row">
-                    <label for="message" class="mypage-zo-create-card-label">内容</label>
-                    <input type="text" name="message" id="message" class="mypage-zo-create-card-element-content"
-                        required placeholder=" 〜した 〜出来た（３０文字制限）">ゾ！
+                <div class="card-row">
+                    <label for="message" class="card-label">内容</label>
+                    <input type="text" name="message" id="message" class="card-message" required
+                        placeholder=" 〜した 〜出来た（３０文字制限）">ゾ！
                 </div>
                 <div>
                     {{.csrfField}}
