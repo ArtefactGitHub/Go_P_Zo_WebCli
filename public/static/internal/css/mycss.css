@@ -35,6 +35,12 @@ body {
   margin-top: 10rem;
 }
 
+.mypage-user-card-title{
+  font-size: 2rem;
+  font-weight: bold;
+  text-shadow: 1px 1px 1px #ccc;
+}
+
 .mypage-zos-card{
   padding: 15px;
   margin: 30px 0;

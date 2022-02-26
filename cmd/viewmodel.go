@@ -8,12 +8,13 @@ const TimeLayout = "2006-01-02"
 
 type MypageUserGetModel struct {
 	*ResponseBase
-	Name  string
-	Email string
+	Name       string
+	Email      string
+	Categories Categories
 }
 
-func NewMypageUserGetModel(name, email string, base *ResponseBase) *MypageUserGetModel {
-	return &MypageUserGetModel{Name: name, Email: email, ResponseBase: base}
+func NewMypageUserGetModel(name, email string, categories Categories, base *ResponseBase) *MypageUserGetModel {
+	return &MypageUserGetModel{Name: name, Email: email, Categories: categories, ResponseBase: base}
 }
 
 type MypageZosGetModel struct {
