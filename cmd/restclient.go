@@ -51,8 +51,8 @@ func RequestGetAllZo(p *UserToken) (*GetAllZoResponseData, error) {
 }
 
 // zo作成
-func RequestPostZo(p *UserToken, rz *requestZo) (*PostZoResponseData, error) {
-	resData := &PostZoResponseData{}
+func RequestPostZo(p *UserToken, rz *requestZo) (*MyPageZosPostModel, error) {
+	resData := &MyPageZosPostModel{}
 	err := Post("zos", nil, rz, resData, p)
 	return resData, err
 }

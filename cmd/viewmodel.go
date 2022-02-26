@@ -8,12 +8,13 @@ const TimeLayout = "2006-01-02"
 
 type MypageUserGetModel struct {
 	*ResponseBase
-	Name  string
-	Email string
+	Name       string
+	Email      string
+	Categories Categories
 }
 
-func NewMypageUserGetModel(name, email string, base *ResponseBase) *MypageUserGetModel {
-	return &MypageUserGetModel{Name: name, Email: email, ResponseBase: base}
+func NewMypageUserGetModel(name, email string, categories Categories, base *ResponseBase) *MypageUserGetModel {
+	return &MypageUserGetModel{Name: name, Email: email, Categories: categories, ResponseBase: base}
 }
 
 type MypageZosGetModel struct {
@@ -61,15 +62,15 @@ type responseZo struct {
 	Message         string    `json:"message"`
 }
 
-type PostZoResponseData struct {
+type MyPageZosPostModel struct {
 	*ResponseBase
 	*responseZo
 }
 
-func (d *PostZoResponseData) GetBaseData() *ResponseBase {
+func (d *MyPageZosPostModel) GetBaseData() *ResponseBase {
 	return d.ResponseBase
 }
-func (d *PostZoResponseData) SetBaseData(statusCode int, err *myError) {
+func (d *MyPageZosPostModel) SetBaseData(statusCode int, err *myError) {
 	d.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
 }
 
@@ -77,12 +78,11 @@ func (d *PostZoResponseData) SetBaseData(statusCode int, err *myError) {
 type requestUserCategory struct {
 	Name    string `json:"name"`
 	ColorId int    `json:"color_id"`
-	UserId  int    `json:"user_id"`
 }
 
-func NewRequestCategory(name string, colorId, userId int) *requestUserCategory {
+func NewRequestCategory(name string, colorId int) *requestUserCategory {
 	return &requestUserCategory{
-		Name: name, ColorId: colorId, UserId: userId,
+		Name: name, ColorId: colorId,
 	}
 }
 

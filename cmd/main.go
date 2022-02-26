@@ -72,7 +72,7 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 			return
 		} else {
 			for _, v := range defaultCategories {
-				_, err := RequestPostUserCategory(res.UserToken, NewRequestCategory(v.Name, v.ColorId, res.User.Id))
+				_, err := RequestPostUserCategory(res.UserToken, NewRequestCategory(v.Name, v.ColorId))
 				if err != nil {
 					ExecuteTemplate(w, r, "signup", ViewArgs{"message": err.Error(), csrf.TemplateTag: csrf.TemplateField(r)})
 					return
@@ -167,6 +167,14 @@ func handleMypageUser(w http.ResponseWriter, r *http.Request) {
 			"model":          res,
 			csrf.TemplateTag: csrf.TemplateField(r),
 		})
+	} else {
+		err = s.PostMypageUser(&session.UserToken, r.Form)
+		if err != nil {
+			ErrorPage(w, r, err.Error())
+			return
+		}
+
+		http.Redirect(w, r, MyPageUserPath, http.StatusMovedPermanently)
 	}
 }
 

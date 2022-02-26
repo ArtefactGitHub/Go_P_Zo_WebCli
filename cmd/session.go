@@ -88,7 +88,11 @@ func (m *SessionManager) NewSession() *SessionData {
 }
 
 func (m *SessionManager) setCookie(w http.ResponseWriter, sessionId string) {
-	cookie := http.Cookie{Name: m.sessionKey, Value: sessionId, Expires: time.Now().AddDate(0, 0, m.lifetimeDate)}
+	cookie := http.Cookie{
+		Name:     m.sessionKey,
+		Value:    sessionId,
+		Expires:  time.Now().AddDate(0, 0, m.lifetimeDate),
+		HttpOnly: true}
 	http.SetCookie(w, &cookie)
 }
 

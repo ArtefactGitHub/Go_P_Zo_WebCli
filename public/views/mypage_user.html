@@ -1,16 +1,40 @@
 {{ define "content" }}
-
-<row>
-    <div class="d-flex justify-content-center ">
-        <div class="col-lg-6 card mypage-user-card">
-            <div class="card-body ">
-                <h5 class="card-title">▼ユーザー情報</h5>
-
+<div class="row">
+    <div class="offset-lg-3 col-lg-6">
+        <div class="card mypage-user-card overflow-auto">
+            <div class="card-body">
+                <h5 class="card-title mypage-user-card-title">▼ユーザー情報</h5>
                 <p>ユーザー名: {{.model.Name}}</p>
                 <p>Email: {{.model.Email}}</p>
             </div>
         </div>
     </div>
-</row>
+</div>
+
+<div class="row">
+    <div class="offset-lg-3 col-lg-6 ">
+        <div class="card mypage-zo-create-card">
+            <div class="card-title mypage-zos-card-title">▼カテゴリー作成</div>
+            <form action="" method="post">
+                <div class="card-row">
+                    <label for="categoryName" class="card-label">カテゴリー名</label>
+                    <input type="text" name="categoryName" id="categoryName" value="" placeholder="（20文字制限）" required>
+
+                    <label for="categoryId" class="card-label">既存のカテゴリー</label>
+                    <select name="categoryId" required>
+                        {{ range .model.Categories.Categories }}
+                        <option value="{{ .Id }}">{{ .Name }}</option>
+                        {{ end }}
+                    </select>
+
+                </div>
+                <div>
+                    {{.csrfField}}
+                    <input type="submit" value="追加！">
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
 
 {{ end }}
