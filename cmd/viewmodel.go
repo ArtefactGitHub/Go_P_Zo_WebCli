@@ -78,12 +78,11 @@ func (d *MyPageZosPostModel) SetBaseData(statusCode int, err *myError) {
 type requestUserCategory struct {
 	Name    string `json:"name"`
 	ColorId int    `json:"color_id"`
-	UserId  int    `json:"user_id"`
 }
 
-func NewRequestCategory(name string, colorId, userId int) *requestUserCategory {
+func NewRequestCategory(name string, colorId int) *requestUserCategory {
 	return &requestUserCategory{
-		Name: name, ColorId: colorId, UserId: userId,
+		Name: name, ColorId: colorId,
 	}
 }
 

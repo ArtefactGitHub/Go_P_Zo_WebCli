@@ -31,6 +31,25 @@ func (s *service) GetMypageUser(userToken *UserToken) (*MypageUserGetModel, erro
 	return result, err
 }
 
+func (s *service) PostMypageUser(userToken *UserToken, values url.Values) error {
+	req, err := validationAddCategory(values)
+	if err != nil {
+		return err
+	}
+
+	resUser, err := RequestGetUser(userToken)
+	if err != nil || resUser.StatusCode != http.StatusOK {
+		return err
+	}
+
+	_, err = RequestPostUserCategory(userToken, NewRequestCategory(req.Name, req.ColorId))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Zo
 func (s *service) GetMypageZos(userToken *UserToken) (*MypageZosGetModel, error) {
 	resUser, err := RequestGetUser(userToken)
@@ -53,7 +72,7 @@ func (s *service) GetMypageZos(userToken *UserToken) (*MypageZosGetModel, error)
 }
 
 func (s *service) PostNewZo(userToken *UserToken, values url.Values) (*MyPageZosPostModel, error) {
-	rz, err := validation(values)
+	rz, err := validationAddZo(values)
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +87,16 @@ func (s *service) PostNewZo(userToken *UserToken, values url.Values) (*MyPageZos
 	return resZo, nil
 }
 
-func validation(values url.Values) (*requestZo, error) {
+func validationAddCategory(values url.Values) (*requestUserCategory, error) {
+	categoryName := values.Get("categoryName")
+	if len(categoryName) > 20 {
+		return nil, fmt.Errorf("メッセージは20文字以内で指定してください。")
+	}
+
+	return NewRequestCategory(categoryName, 0), nil
+}
+
+func validationAddZo(values url.Values) (*requestZo, error) {
 	achievementDateStr := values.Get("achievementdate")
 	achievementDate, err := time.Parse(TimeLayout, achievementDateStr)
 	if err != nil {
