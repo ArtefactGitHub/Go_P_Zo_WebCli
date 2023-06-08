@@ -121,7 +121,7 @@ func request(api string, method string, reqHeader map[string]string, reqBody int
 
 // リクエスト処理
 func requestCore(api string, method string, reqHeader map[string]string, body io.Reader, resData interface{}) error {
-	endpoint := "http://localhost:8000/api/v1/"
+	endpoint := "http://localhost:8080/api/v2/"
 	log.Printf("[Post] api: %s, method: %s, reqHeader: %v", api, method, reqHeader)
 
 	reqURL, err := url.Parse(endpoint)

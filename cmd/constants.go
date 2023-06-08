@@ -7,7 +7,7 @@ const (
 	viewFilePath        = pubPath + "/views/"
 	layoutFilePath      = pubPath + "/layouts/layout.html"
 	layoutName          = "layout"
-	port                = "8080"
+	port                = "50000"
 	cookie_key_session  = "go_p_zo_webcli_cookie_key_session"
 	sessionLifetimeDate = 1
 )
