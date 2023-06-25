@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"sort"
 	"time"
 )
@@ -64,16 +65,31 @@ type PostUserResponseData struct {
 	UserToken *UserToken `json:"usertoken"`
 }
 
-func (tr *PostUserResponseData) GetBaseData() *ResponseBase {
-	return tr.ResponseBase
+func (v *PostUserResponseData) GetBaseData() *ResponseBase {
+	return v.ResponseBase
 }
-func (tr *PostUserResponseData) SetBaseData(statusCode int, err *myError) {
-	tr.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
+func (v *PostUserResponseData) SetBaseData(statusCode int, err *myError) {
+	v.ResponseBase = &ResponseBase{StatusCode: statusCode, Error: err}
+}
+
+func (v *PostUserResponseData) String() string {
+	str := ""
+	if v.ResponseBase == nil {
+		str = str + "Base is nil \n"
+	} else {
+		str = str + fmt.Sprintf("Base: %#v \n", v.ResponseBase)
+	}
+	if v.User == nil {
+		str = str + "User is nil \n"
+	} else {
+		str = str + fmt.Sprintf("User: %#v \n", v.User)
+	}
+	return str
 }
 
 type PostLoginResponseData struct {
 	*ResponseBase
-	*UserToken
+	UserToken *UserToken `json:"user_token"`
 }
 
 func (tr *PostLoginResponseData) GetBaseData() *ResponseBase {
@@ -164,12 +180,6 @@ type Category struct {
 	Name    string `json:"name"`
 	ColorId int    `json:"color_id"`
 	UserId  int    `json:"user_id"`
-}
-
-var defaultCategories []Category = []Category{
-	{Name: "学習", Number: 99, ColorId: 0},
-	{Name: "人生", Number: 98, ColorId: 0},
-	{Name: "生活", Number: 97, ColorId: 0},
 }
 
 type Categories struct {
