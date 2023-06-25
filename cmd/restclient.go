@@ -46,14 +46,14 @@ func RequestGetUser(p *UserToken) (*GetUserResponseData, error) {
 // zo情報取得
 func RequestGetAllZo(p *UserToken) (*GetAllZoResponseData, error) {
 	resData := &GetAllZoResponseData{}
-	err := Get("zos", nil, nil, resData, p)
+	err := Get("me/zos", nil, nil, resData, p)
 	return resData, err
 }
 
 // zo作成
 func RequestPostZo(p *UserToken, rz *requestZo) (*MyPageZosPostModel, error) {
 	resData := &MyPageZosPostModel{}
-	err := Post("zos", nil, rz, resData, p)
+	err := Post("me/zos", nil, rz, resData, p)
 	return resData, err
 }
 
