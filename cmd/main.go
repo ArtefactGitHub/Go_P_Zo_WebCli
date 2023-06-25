@@ -70,14 +70,6 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 
 			ExecuteTemplate(w, r, "signup", ViewArgs{"message": message, csrf.TemplateTag: csrf.TemplateField(r)})
 			return
-		} else {
-			for _, v := range defaultCategories {
-				_, err := RequestPostUserCategory(res.UserToken, NewRequestCategory(v.Name, v.ColorId))
-				if err != nil {
-					ExecuteTemplate(w, r, "signup", ViewArgs{"message": err.Error(), csrf.TemplateTag: csrf.TemplateField(r)})
-					return
-				}
-			}
 		}
 
 		http.Redirect(w, r, SignInPath, http.StatusMovedPermanently)
