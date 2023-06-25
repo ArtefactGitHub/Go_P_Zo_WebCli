@@ -33,7 +33,7 @@ func main() {
 
 	csrfMiddleware := csrf.Protect([]byte(authKey), csrf.Path("/"))(r)
 	log.Printf("running on http://localhost:%s", port)
-	http.ListenAndServe("localhost:"+port, csrfMiddleware)
+	_ = http.ListenAndServe("localhost:"+port, csrfMiddleware)
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
@@ -51,7 +51,7 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if r.Method == http.MethodPost {
-		r.ParseForm()
+		_ = r.ParseForm()
 
 		username := r.Form.Get("username")
 		email := r.Form.Get("email")
@@ -64,20 +64,12 @@ func handleSignUp(w http.ResponseWriter, r *http.Request) {
 			message := ""
 			if err != nil {
 				message = err.Error()
-			} else {
+			} else if res.Error != nil {
 				message = res.Error.Message
 			}
 
 			ExecuteTemplate(w, r, "signup", ViewArgs{"message": message, csrf.TemplateTag: csrf.TemplateField(r)})
 			return
-		} else {
-			for _, v := range defaultCategories {
-				_, err := RequestPostUserCategory(res.UserToken, NewRequestCategory(v.Name, v.ColorId))
-				if err != nil {
-					ExecuteTemplate(w, r, "signup", ViewArgs{"message": err.Error(), csrf.TemplateTag: csrf.TemplateField(r)})
-					return
-				}
-			}
 		}
 
 		http.Redirect(w, r, SignInPath, http.StatusMovedPermanently)
@@ -95,14 +87,14 @@ func handleSignIn(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 	} else if r.Method == http.MethodPost {
-		r.ParseForm()
+		_ = r.ParseForm()
 		email := r.Form.Get("email")
 		password := r.Form.Get("password")
 
 		res, err := RequestSignin(email, password)
 		log.Printf("res: %v, err: %v", res, err)
 
-		if err != nil || res.StatusCode != http.StatusCreated {
+		if err != nil || res.StatusCode != http.StatusOK {
 			message := "認証情報が正しくありません"
 			if err != nil {
 				message = err.Error()
@@ -237,14 +229,14 @@ func IsLogin(w http.ResponseWriter, r *http.Request) bool {
 
 func ExecuteTemplate(w http.ResponseWriter, r *http.Request, viewName string, args ViewArgs) {
 	t, _ := template.ParseFiles(layoutFilePath, viewFilePath+viewName+".html")
-	t.ExecuteTemplate(w, layoutName, args.Add("isLogin", IsLogin(w, r)))
+	_ = t.ExecuteTemplate(w, layoutName, args.Add("isLogin", IsLogin(w, r)))
 }
 
-func ExecuteTemplateWithFunc(w http.ResponseWriter, r *http.Request, viewName string, args ViewArgs, funcMap template.FuncMap) {
+func ExecuteTemplateWithFunc(w http.ResponseWriter, r *http.Request, viewName string, args ViewArgs, _ template.FuncMap) {
 	t, _ := template.New(viewName+".html").
 		Funcs(template.FuncMap{"TimeToSimple": gPresenter.TimeToSimple}).
 		ParseFiles(layoutFilePath, viewFilePath+viewName+".html")
-	t.ExecuteTemplate(w, layoutName, args.Add("isLogin", IsLogin(w, r)))
+	_ = t.ExecuteTemplate(w, layoutName, args.Add("isLogin", IsLogin(w, r)))
 }
 
 func (a *ViewArgs) Add(key string, value interface{}) *ViewArgs {

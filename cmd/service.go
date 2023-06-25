@@ -62,12 +62,9 @@ func (s *service) GetMypageZos(userToken *UserToken) (*MypageZosGetModel, error)
 		return nil, err
 	}
 
-	resCategory, err := RequestGetAllCategory(userToken)
-	if err != nil || resCategory.StatusCode != http.StatusOK {
-		return nil, err
-	}
-
-	result := NewMypageZosGetModel(resUser.FamilyName+resUser.GivenName, resUser.Email, *resZo.Zos, resCategory.Categories, resZo.ResponseBase)
+	// TODO 後で調整
+	resCategory := Categories{}
+	result := NewMypageZosGetModel(resUser.FamilyName+resUser.GivenName, resUser.Email, *resZo.Zos, resCategory, resZo.ResponseBase)
 	return result, err
 }
 

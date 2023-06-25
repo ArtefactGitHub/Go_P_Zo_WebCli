@@ -46,14 +46,14 @@ func RequestGetUser(p *UserToken) (*GetUserResponseData, error) {
 // zo情報取得
 func RequestGetAllZo(p *UserToken) (*GetAllZoResponseData, error) {
 	resData := &GetAllZoResponseData{}
-	err := Get("zos", nil, nil, resData, p)
+	err := Get("me/zos", nil, nil, resData, p)
 	return resData, err
 }
 
 // zo作成
 func RequestPostZo(p *UserToken, rz *requestZo) (*MyPageZosPostModel, error) {
 	resData := &MyPageZosPostModel{}
-	err := Post("zos", nil, rz, resData, p)
+	err := Post("me/zos", nil, rz, resData, p)
 	return resData, err
 }
 
@@ -72,12 +72,12 @@ func RequestPostUserCategory(p *UserToken, r *requestUserCategory) (*PostUserCat
 }
 
 // GET処理
-func Get(api string, reqHeader map[string]string, reqBody interface{}, resData IResponse, p *UserToken) error {
+func Get(api string, _ map[string]string, _ interface{}, resData IResponse, p *UserToken) error {
 	return request(api, http.MethodGet, nil, nil, resData, p)
 }
 
 // POST処理
-func Post(api string, reqHeader map[string]string, reqBody interface{}, resData IResponse, p *UserToken) error {
+func Post(api string, _ map[string]string, reqBody interface{}, resData IResponse, p *UserToken) error {
 	return request(api, http.MethodPost, nil, reqBody, resData, p)
 }
 
@@ -111,8 +111,8 @@ func request(api string, method string, reqHeader map[string]string, reqBody int
 
 	// send body
 	if reqBody != nil {
-		json, _ := json.MarshalIndent(reqBody, "", "\t")
-		body := bytes.NewReader(json)
+		jsonStr, _ := json.MarshalIndent(reqBody, "", "\t")
+		body := bytes.NewReader(jsonStr)
 		return requestCore(api, method, h, body, resData)
 	} else {
 		return requestCore(api, method, h, nil, resData)
@@ -121,7 +121,7 @@ func request(api string, method string, reqHeader map[string]string, reqBody int
 
 // リクエスト処理
 func requestCore(api string, method string, reqHeader map[string]string, body io.Reader, resData interface{}) error {
-	endpoint := "http://localhost:8000/api/v1/"
+	endpoint := "http://localhost:8080/api/v2/"
 	log.Printf("[Post] api: %s, method: %s, reqHeader: %v", api, method, reqHeader)
 
 	reqURL, err := url.Parse(endpoint)
@@ -169,8 +169,8 @@ func getTokenRequest() (*TokenResponse, error) {
 	resData := &TokenResponse{}
 
 	var body *bytes.Reader
-	json, _ := json.MarshalIndent(TokenRequest{Id: Cfg.ClientId, Secret: Cfg.ClientSecret}, "", "\t")
-	body = bytes.NewReader(json)
+	jsonStr, _ := json.MarshalIndent(TokenRequest{Id: Cfg.ClientId, Secret: Cfg.ClientSecret}, "", "\t")
+	body = bytes.NewReader(jsonStr)
 
 	err := requestCore("client/token", http.MethodPost, nil, body, resData)
 	return resData, err
@@ -183,7 +183,12 @@ func doRequest(req *http.Request, respBody interface{}) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	defer res.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			log.Printf("body close err: %#v \n", err)
+		}
+	}(res.Body)
 
 	body, err := ioutil.ReadAll(res.Body)
 	log.Printf("[do] body: \n%v", string(body))
