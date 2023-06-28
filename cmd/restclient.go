@@ -60,14 +60,14 @@ func RequestPostZo(p *UserToken, rz *requestZo) (*MyPageZosPostModel, error) {
 // category情報取得
 func RequestGetAllCategory(p *UserToken) (*GetAllCategoryResponseData, error) {
 	resData := &GetAllCategoryResponseData{}
-	err := Get(fmt.Sprintf("users/%d/categories", p.UserId), nil, nil, resData, p)
+	err := Get("me/categories", nil, nil, resData, p)
 	return resData, err
 }
 
 // category 作成
 func RequestPostUserCategory(p *UserToken, r *requestUserCategory) (*PostUserCategoryResponseData, error) {
 	resData := &PostUserCategoryResponseData{}
-	err := Post(fmt.Sprintf("users/%d/categories", p.UserId), nil, r, resData, p)
+	err := Post("me/categories", nil, r, resData, p)
 	return resData, err
 }
 

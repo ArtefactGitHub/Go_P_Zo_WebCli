@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strconv"
 	"time"
+	"unicode/utf8"
 )
 
 type service struct {
@@ -42,7 +43,7 @@ func (s *service) PostMypageUser(userToken *UserToken, values url.Values) error 
 		return err
 	}
 
-	_, err = RequestPostUserCategory(userToken, NewRequestCategory(req.Name, req.ColorId))
+	_, err = RequestPostUserCategory(userToken, NewRequestCategory(req.Name))
 	if err != nil {
 		return err
 	}
@@ -62,9 +63,12 @@ func (s *service) GetMypageZos(userToken *UserToken) (*MypageZosGetModel, error)
 		return nil, err
 	}
 
-	// TODO 後で調整
-	resCategory := Categories{}
-	result := NewMypageZosGetModel(resUser.FamilyName+resUser.GivenName, resUser.Email, *resZo.Zos, resCategory, resZo.ResponseBase)
+	resCategory, err := RequestGetAllCategory(userToken)
+	if err != nil || resZo.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	result := NewMypageZosGetModel(resUser.FamilyName+resUser.GivenName, resUser.Email, *resZo.Zos, resCategory.Categories, resZo.ResponseBase)
 	return result, err
 }
 
@@ -90,7 +94,7 @@ func validationAddCategory(values url.Values) (*requestUserCategory, error) {
 		return nil, fmt.Errorf("メッセージは20文字以内で指定してください。")
 	}
 
-	return NewRequestCategory(categoryName, 0), nil
+	return NewRequestCategory(categoryName), nil
 }
 
 func validationAddZo(values url.Values) (*requestZo, error) {
