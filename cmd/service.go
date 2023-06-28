@@ -90,7 +90,7 @@ func (s *service) PostNewZo(userToken *UserToken, values url.Values) (*MyPageZos
 
 func validationAddCategory(values url.Values) (*requestUserCategory, error) {
 	categoryName := values.Get("categoryName")
-	if len(categoryName) > 20 {
+	if utf8.RuneCountInString(categoryName) > 20 {
 		return nil, fmt.Errorf("メッセージは20文字以内で指定してください。")
 	}
 
@@ -121,8 +121,8 @@ func validationAddZo(values url.Values) (*requestZo, error) {
 	}
 
 	message := values.Get("message")
-	if len(message) > 30 {
-		return nil, fmt.Errorf("メッセージは30文字以内で指定してください。")
+	if utf8.RuneCountInString(message) > 30 {
+		return nil, fmt.Errorf("メッセージは30文字以内で指定してください。message: %s\n", message)
 	}
 
 	return NewRequestZo(
